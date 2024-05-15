@@ -15,9 +15,8 @@ spfetch uses a credential vault to secure credentials.  This allows automated sc
     	apt update 
     	apt install python 
     	pip install keyring
-    	pip install filelock
     	pip install cryptography
-		git pull {add-git-repo} 
+		git pull https://github.com/redisjohn/spfetch
     
 1. Initialize the Credential Vault 
 
@@ -86,19 +85,19 @@ The credstore utility is used to manage credentials.
 
 To initialize the vault run the following command:
 
-	credstore init
+	credstore.py init
 
 You should save the secret in a secure location.  This will allow you to move the credentials vault to another system if needed in the future.  
 
 Once the vault is initialized you can store encrypted credentials for each cluster. 
 
-	credstore add {fqdn} --user {username} --pwd {password} 
+	credstore.py add {fqdn} --user {username} --pwd {password} 
 
 #### Moving the Credential Vault to another System
 
 To restore the vault to a different system, you must have a backup of the vault directory and have the secret key generated when the vault was initiated.   After the vault directory is restored on the new system, run the following command:
 
-	credstore recover {secretkey}  
+	credstore.py recover {secretkey}  
 
 
 
