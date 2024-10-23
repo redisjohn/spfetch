@@ -9,13 +9,13 @@ class SupportPackage:
     def get_fname(fqdn,path):
             current_time = datetime.now()
             formatted_time = current_time.strftime("%Y%m%d%H%M%S")            
-            fname = f"{fqdn}_{formatted_time}.tar.gz"
+            fname = f"debuginfo.{fqdn}_{formatted_time}.tar.gz"
             if not os.path.exists(path):
                 os.makedirs(path)
             return os.path.join(path,fname)
 
     @staticmethod
-    def tablulate_bdb_info(response):
+    def tablulate_bdb_info(fqdn,response):
 
         bdb_json = json.loads(response)
 
@@ -28,14 +28,17 @@ class SupportPackage:
         version_width = max(len(str(bdb['version'])) for bdb in bdb_names) + 2
         shards_width = max(len(str(bdb['shards_count'])) for bdb in bdb_names) + 2
 
+        print('\n' + fqdn)
         print(f"{'Id'.ljust(uid_width)} {'Name'.ljust(name_width)} {'Version'.ljust(version_width)} {'Shards'.ljust(shards_width)}")
         print('-' * (uid_width + name_width + version_width + shards_width + 6))
 
         for bdb in bdb_names:
-            print(f"{str(bdb['uid']).ljust(uid_width)}  {str(bdb['name']).ljust(name_width)} {str(bdb['version']).ljust(version_width)} {str(bdb['shards_count']).ljust(shards_width)}")
+            if (bdb['slave_ha']):
+                bdb['shards_count'] *= 2
+            print(f"{str(bdb['uid']).ljust(uid_width)}  {str(bdb['name']).ljust(name_width)} {str(bdb['version']).ljust(version_width)} {str(bdb['shards_count']).rjust(shards_width)}")
 
     def deserialize_bdb_info(fqdn,response):
-
+        bdb_info = []
         bdb_json = json.loads(response)
         for bdb in bdb_json:
             bdb['cluster'] = fqdn
@@ -44,8 +47,9 @@ class SupportPackage:
         #sort by uid
         bdb_names = sorted(bdb_json, key=lambda x: (x['cluster'], x['uid']))
         for bdb in bdb_names:
-            print(json.dumps(bdb, indent=4)) 
-
+            del bdb['slave_ha']
+            bdb_info.append(bdb)
+        return bdb_info
 
     @staticmethod
     def get_bdb_names(fqdn,username,password):
@@ -66,7 +70,7 @@ class SupportPackage:
         output['shards_limit'] = license['shards_limit']
         output['ram_shards'] = license['ram_shards_in_use']
         output['flash_shards'] = license['flash_shards_in_use']
-        print(json.dumps(output, indent=4)) 
+        return output
 
     @staticmethod
     def get_license_info(fqdn,username,password):
@@ -79,7 +83,6 @@ class SupportPackage:
         except requests.exceptions.RequestException as e:
             print(f"Error License Info for {fqdn}: {e}")                  
         
-    
     @staticmethod
     def download_package(fqdn, username, password,path):
         try:
