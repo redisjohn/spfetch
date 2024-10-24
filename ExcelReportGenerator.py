@@ -1,4 +1,3 @@
-import openpyxl
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
@@ -15,7 +14,7 @@ class ExcelReportGenerator:
         Create a new workbook.
         """
         self.workbook = Workbook()
-        print("New workbook created.")
+        #print("New workbook created.")
 
     def CreateSheet(self, sheet_name):
         """
@@ -31,7 +30,7 @@ class ExcelReportGenerator:
             self.workbook.remove(self.workbook.active)
         
         self.workbook.create_sheet(title=sheet_name)
-        print(f"Sheet '{sheet_name}' created.")
+        #print(f"Sheet '{sheet_name}' created.")
 
     def AddData(self, sheet_name, data):
         """
@@ -67,7 +66,7 @@ class ExcelReportGenerator:
             max_length = max(len(str(cell.value)) for cell in sheet[column_letter])
             sheet.column_dimensions[column_letter].width = max_length + 2
         
-        print(f"Data added to sheet '{sheet_name}'.")
+        #print(f"Data added to sheet '{sheet_name}'.")
 
     def SaveWorkbook(self, file_name='report.xlsx'):
         """
