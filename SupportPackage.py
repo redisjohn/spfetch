@@ -61,7 +61,6 @@ class SupportPackage:
         except requests.exceptions.RequestException as e:
             logger.exception(e,f"Error Getting Node Information{fqdn}")                  
 
-
     @staticmethod
     def tablulate_bdb_info(fqdn,response):
 

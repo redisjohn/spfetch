@@ -8,16 +8,21 @@ spfetch uses a credential vault to secure credentials.  This allows automated sc
 
 
 ## Quick Start
-	
-1. Install the Software
 
-    	apt update 
-    	apt install python 
-		apt install git
-    	pip install keyring
-    	pip install cryptography
+
+1. Ensure you have python 3.8 or higher
+
+1. Ensure you have git installed. 
+
+1. Install the following dependencies. 
+
+    qupip install keyring
+    pip install cryptography
 		pip install openpyxl
-		git pull https://github.com/redisjohn/spfetch
+		pip install Files.com
+
+
+1.  git pull https://github.com/redisjohn/spfetch
     
 1. Initialize the Credential Vault 
 
