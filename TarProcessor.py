@@ -90,7 +90,7 @@ class TarProcessor:
                 for member in original_tar.getmembers():
                     # Exclude .gz files or files in the exclude_files list
                     if member.name.endswith('.gz') or member.name in self.exclude_files:
-                        print(f"Excluding file: {member.name}")
+                        #print(f"Excluding file: {member.name}")
                         continue
 
                     # Extract the file content

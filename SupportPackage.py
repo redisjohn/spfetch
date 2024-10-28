@@ -3,6 +3,7 @@ from datetime import datetime
 import requests
 import json
 from TarProcessor import TarProcessor
+from Logger import Logger
 
 class SupportPackage:
 
@@ -50,7 +51,7 @@ class SupportPackage:
         return node_info
     
     @staticmethod
-    def get_nodes(fqdn,username,password):
+    def get_nodes(logger,fqdn,username,password):
         try:
             requests.packages.urllib3.disable_warnings()
             download_url = "https://" + fqdn + ":9443/v1/nodes"                 
@@ -58,7 +59,7 @@ class SupportPackage:
             response.raise_for_status()
             return response.text
         except requests.exceptions.RequestException as e:
-            print(f"Error Getting Node Informationfor {fqdn}: {e}")                  
+            logger.exception(e,f"Error Getting Node Information{fqdn}")                  
 
 
     @staticmethod
@@ -126,7 +127,7 @@ class SupportPackage:
             response.raise_for_status()
             return response.text
         except requests.exceptions.RequestException as e:
-            print(f"Error Getting Database Names for {fqdn}: {e}")                  
+            print(f"({fqdn}):Error Getting Database Names")                  
 
     @staticmethod
     def deserialize_license_info(fqdn,response):
@@ -152,7 +153,7 @@ class SupportPackage:
             print(f"Error License Info for {fqdn}: {e}")                  
         
     @staticmethod
-    def download_package(fqdn, username, password,path,db,reduce_tar_size):
+    def download_package(logger,fqdn, username, password,path,db,reduce_tar_size):
         try:
             requests.packages.urllib3.disable_warnings()
             if db != 0:
@@ -162,19 +163,19 @@ class SupportPackage:
                 download_url = "https://" + fqdn + ":9443/v1/debuginfo/all"
                 #download_url = "https://" + fqdn + ":9443/v1/bdbs/debuginfo"   7.4.2 or higher
             
-            print("Starting Download")        
+            logger.info(f"({fqdn}):Starting Download")        
             response = requests.get(download_url, auth=(username, password), verify=False)
             response.raise_for_status()
             fname = SupportPackage.get_fname(fqdn,path) 
 
             if (reduce_tar_size):
-                print("Reducing Package Size")
+                logger.info(f"({fqdn}):Reducing Package Size")
                 tar_processor_bytes = TarProcessor()
                 savings, original_size, new_size, new_tar_bytes = tar_processor_bytes.process_from_bytes(response.content)
 
-                print(f"(Bytes) Original tar size: {original_size} bytes")
-                print(f"(Bytes) New tar size: {new_size} bytes")
-                print(f"(Bytes) Storage savings: {savings} bytes")
+                logger.info(f"({fqdn}):Original tar size: {original_size} bytes")
+                logger.info(f"({fqdn}):New tar size: {new_size} bytes")
+                logger.info(f"({fqdn}):Storage savings: {savings} bytes")
 
                 with open(fname, "wb") as f:
                     f.write(new_tar_bytes)
@@ -182,6 +183,6 @@ class SupportPackage:
                 with open(fname, "wb") as f:
                     f.write(response.content)
 
-            print(f"Support package for {fqdn} downloaded successfully.")
+            logger.info(f"({fqdn}):Support package downloaded successfully.")
         except requests.exceptions.RequestException as e:
-            print(f"Error downloading support package for {fqdn}: {e}")
+            logger.exception(e,f"({fqdn}):Error downloading support package")

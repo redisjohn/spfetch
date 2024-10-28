@@ -78,7 +78,7 @@ class ExcelReportGenerator:
             raise ValueError("Workbook not created. Please create a workbook first using CreateWorkbook method.")
         
         self.workbook.save(file_name)
-        print(f"Workbook saved as '{file_name}'.")
+        return file_name 
 '''
 # Example usage:
 if __name__ == "__main__":

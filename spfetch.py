@@ -3,6 +3,7 @@ import argparse
 from SupportPackage import SupportPackage
 from CredentialVault import CredentialVault
 from ExcelReportGenerator import ExcelReportGenerator
+from Logger import Logger
 from Fqdns import FQDNs
 from datetime import datetime
 import os
@@ -11,7 +12,7 @@ import json
 
 
 
-def sort_and_keep_latest_files(folder_path, file_prefix, n):
+def sort_and_keep_latest_files(logger,folder_path, file_prefix, n):
     # Get a list of all files in the folder
     all_files = os.listdir(folder_path)
 
@@ -28,7 +29,7 @@ def sort_and_keep_latest_files(folder_path, file_prefix, n):
     for file in matched_files:
         if file not in files_to_keep:
             fname = os.path.join(folder_path, file)
-            print(f"Purging Old Version:({fname}")
+            logger.info(f"Purging Old Version:({fname})")
             os.remove(fname)
 
 def get_fname(path):
@@ -39,9 +40,8 @@ def get_fname(path):
                 os.makedirs(path)
             return os.path.join(path,fname)
 
-def xls(path):
+def xls(logger,fqdns,path):
     clusters = []
-    fqdns = FQDNs.get()
 
  # Create a new instance of the generator
     generator = ExcelReportGenerator()
@@ -55,13 +55,13 @@ def xls(path):
             user,pwd = CredentialVault.decrypt_credentials(fqdn)
 
             # get license and node info for cluster sheet
-            print(f"Processing Data for:({fqdn})")
+            logger.info(f"Processing Data for:({fqdn})")
 
             response = SupportPackage.get_license_info(fqdn,user,pwd)
             #license = SupportPackage.deserialize_license_info(fqdn,response)
             license = json.loads(response)
 
-            response = SupportPackage.get_nodes(fqdn,user,pwd)
+            response = SupportPackage.get_nodes(logger,fqdn,user,pwd)
             nodeinfo = SupportPackage.summarize_node_info(response)
             
             cluster = {}
@@ -89,15 +89,16 @@ def xls(path):
             generator.CreateSheet(fqdn)
             generator.AddData(fqdn,bdb_data)
         except Exception as e:
-            print(f"Error during Request for {fqdn}:{e}")
+            logger.exception(e,f"Error during Request for {fqdn}")
 
         
     # add licenses to cluster worksheet        
     generator.AddData("Clusters",clusters)     
     #save the workbook   
-    generator.SaveWorkbook(get_fname(path))   
+    file_name = generator.SaveWorkbook(get_fname(path))   
+    logger.info(f"Workbook saved as '{file_name}'.")
 
-def process(fqdn,user,pwd,path,args):
+def process(logger,fqdn,user,pwd,path,args):
 
     if (args.list):
         try: 
@@ -122,49 +123,47 @@ def process(fqdn,user,pwd,path,args):
             if args.bloat:
                 reduce_tar_size = False                 
             else:
-                print("Agressively Optimizing Support Package Size")
+                logger.info(f"({fqdn}):Agressively Optimizing Support Package Size")
                 reduce_tar_size = True
                    
-            SupportPackage.download_package(fqdn, user,pwd,path,0,reduce_tar_size) 
+            SupportPackage.download_package(logger,fqdn, user,pwd,path,0,reduce_tar_size) 
         
             keep = int(args.keep) if (args.keep is not None) else 1
 
-            sort_and_keep_latest_files(path,f'debuginfo.{fqdn}',keep)    
+            sort_and_keep_latest_files(logger,path,f'debuginfo.{fqdn}',keep)    
         
         except Exception as e:
-            print(f"Fatal Error: {str(e)}")
-            exit(-1)
+            logger.exception(e,f"({fqdn}):Fatal Error")
     return
 
 
 #
 # Process command arguments for specified fqdn
 #
-def process_args_single_fqdn(fqdn,args,path):
+def process_args_single_fqdn(logger,fqdn,args,path):
         if (args.user is not None):
             user = args.user
             if (args.pwd is None):
-                print("Missing Password")
+                logger.error(f"({fqdn}):Missing Password")
                 exit(-1)
             else:
                 pwd = args.pwd
         else:
             try:
-                user,pwd = CredentialVault.decrypt_credentials(args.fqdn)
+                user,pwd = CredentialVault.decrypt_credentials(fqdn)
             except Exception as e:
-                print(f"Fatal Error: {str(e)}")
+                logger.exception(e,f"Fatal Error")
                 exit(-1)
         try:
-            process(fqdn,user,pwd,path,args)
+            process(logger,fqdn,user,pwd,path,args)
         except Exception as e:
-            print(f"Fatal Error: {str(e)}")
+            logger.exception(e,f"Fatal Error")
             exit(-1)
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Download a support package")
+    parser = argparse.ArgumentParser(description="Redis Enterprise Audit Tool")
 
-    parser.add_argument("fqdn", help="Fully Qualified Domain Name of the Server (or all)") 
+    parser.add_argument("fqdn", help="Fully Qualified Domain Name of Cluster (wildcards supported if credentials in vault))") 
     parser.add_argument("--user", help="Username for authentication")
     parser.add_argument("--pwd", help="Password for Authentication")
     parser.add_argument("--path", help="Folder path for saving Output Files")
@@ -175,51 +174,41 @@ def main():
     parser.add_argument("--json",action='store_true',help="Format Database Output List in Json")
     parser.add_argument("--xls",action='store_true',help="Generate Excel Inventory Report For All Clusters")
     
+
+    logger = Logger(name='MyLogger', facility='spfetch', log_to_file=False, filename='logs/app')
+
     args = parser.parse_args()
     user = ''
     pwd = '' 
-    fqdn = args.fqdn
 
     if args.path:
         path = args.path
     else:
         path = "output"   
+    
+    fqdn = args.fqdn
+    fqdns = []
 
-    if fqdn != 'all':
-        process_args_single_fqdn(fqdn,args,path)
-        '''
-        if (args.user is not None):
-            user = args.user
-            if (args.pwd is None):
-                print("Missing Password")
-                exit(-1)
-            else:
-                pwd = args.pwd
-        else:
-            try:
-                user,pwd = CredentialVault.decrypt_credentials(args.fqdn)
-            except Exception as e:
-                print(f"Fatal Error: {str(e)}")
-                exit(-1)
-        try:
-            process(fqdn,user,pwd,path,args)
-        except Exception as e:
-            print(f"Fatal Error: {str(e)}")
-            exit(-1)
-       '''     
+    fqdns = FQDNs.get(fqdn)
+
+    if  len(fqdns) == 1:
+        process_args_single_fqdn(logger,fqdns[0],args,path)
+
+    elif (len(fqdns) == 0):
+        logger.error("no matches found")
+
     else:
         if not args.xls:
-            fqdns = FQDNs.get()
             for fqdn in fqdns:
                 try:
                     user,pwd = CredentialVault.decrypt_credentials(fqdn)
-                    process(fqdn,user,pwd,path,args) 
+                    process(logger,fqdn,user,pwd,path,args) 
                 except Exception as e:
-                    print(f"Error during Request for {fqdn}")
+                    logger.exception(e,f"({fqdn}):Error during Request")
         else:
-            xls(path)
+            xls(logger,fqdns,path)
             keep = int(args.keep) if (args.keep is not None) else 5
-            sort_and_keep_latest_files(path,"inventory",keep)    
+            sort_and_keep_latest_files(logger,path,"inventory",keep)    
     
 if __name__ == "__main__":
 
