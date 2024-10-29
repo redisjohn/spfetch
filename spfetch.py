@@ -10,8 +10,6 @@ import os
 import re
 import json
 
-
-
 def sort_and_keep_latest_files(logger,folder_path, file_prefix, n):
     # Get a list of all files in the folder
     all_files = os.listdir(folder_path)
@@ -43,7 +41,7 @@ def get_fname(path):
 def xls(logger,fqdns,path):
     clusters = []
 
- # Create a new instance of the generator
+    # Create a new instance of the generator
     generator = ExcelReportGenerator()
 
     # Create a new workbook and add data
@@ -119,14 +117,22 @@ def process(logger,fqdn,user,pwd,path,args):
         print(json.dumps(license, indent=4)) 
     else:
         try: 
-
             if args.bloat:
                 reduce_tar_size = False                 
             else:
                 logger.info(f"({fqdn}):Agressively Optimizing Support Package Size")
                 reduce_tar_size = True
-                   
-            SupportPackage.download_package(logger,fqdn, user,pwd,path,0,reduce_tar_size) 
+
+            save_to_file = True
+
+            if (args.nosave):
+                if args.upload:
+                    logger.info(f"({{fqdn}}):Support Package will not be saved to disk")
+                    save_to_file = False
+
+            db = 0 if (args.db is None) else args.db
+
+            SupportPackage.download_package(logger,fqdn, user,pwd,path,db,reduce_tar_size,save_to_file=save_to_file,upload=args.upload,dry_run=args.dryrun) 
         
             keep = int(args.keep) if (args.keep is not None) else 1
 
@@ -135,7 +141,6 @@ def process(logger,fqdn,user,pwd,path,args):
         except Exception as e:
             logger.exception(e,f"({fqdn}):Fatal Error")
     return
-
 
 #
 # Process command arguments for specified fqdn
@@ -161,23 +166,28 @@ def process_args_single_fqdn(logger,fqdn,args,path):
             exit(-1)
 
 def main():
-    parser = argparse.ArgumentParser(description="Redis Enterprise Audit Tool")
+    parser = argparse.ArgumentParser(description="Redis Enterprise Audit Tool Version 0.9")
 
     parser.add_argument("fqdn", help="Fully Qualified Domain Name of Cluster (wildcards supported if credentials in vault))") 
     parser.add_argument("--user", help="Username for authentication")
     parser.add_argument("--pwd", help="Password for Authentication")
     parser.add_argument("--path", help="Folder path for saving Output Files")
+    parser.add_argument("--db", help="Database Id")
+    parser.add_argument("--upload",action='store_true',help="Upload Package to Redis.io (requires API KEY)")
+    parser.add_argument("--nosave", action='store_true',help="Do not save support package to disk (works only with --upload")
     parser.add_argument("--keep",help="Number of Output files to keep")
     parser.add_argument("--bloat",action='store_true',help="Make no attempt to reduce the Package Size") 
+    parser.add_argument("--dryrun",action='store_true',help="Do a dryrun for testing") 
     parser.add_argument("--list",action='store_true',help="List Databases Id and Names")
+    parser.add_argument("--json",action='store_true',help="Format database output list in Json")
     parser.add_argument("--license",action='store_true',help="List Databases Id and Names")
-    parser.add_argument("--json",action='store_true',help="Format Database Output List in Json")
     parser.add_argument("--xls",action='store_true',help="Generate Excel Inventory Report For All Clusters")
     
-
     logger = Logger(name='MyLogger', facility='spfetch', log_to_file=False, filename='logs/app')
 
     args = parser.parse_args()
+   
+
     user = ''
     pwd = '' 
 

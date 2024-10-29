@@ -2,6 +2,11 @@ import tarfile
 import os
 import io
 
+
+def divide_and_round(number):
+        result = number / 1_000_000
+        return round(result, 2)
+
 class TarProcessor:
  
     def __init__(self, source_tar="", destination_tar="", exclude_files=None):
@@ -16,6 +21,9 @@ class TarProcessor:
         self.destination_tar = destination_tar
         self.exclude_files = exclude_files if exclude_files else []
     
+
+    
+
     def tail_file(self, content):
         """
         Get the last n lines from a text content.
@@ -119,7 +127,7 @@ class TarProcessor:
         # Return to the start of the BytesIO object for further use
         destination_io.seek(0)
 
-        return storage_savings, original_size, new_size, destination_io.getvalue()
+        return divide_and_round(storage_savings), divide_and_round(original_size), divide_and_round(new_size), destination_io.getvalue()
 
 
 '''

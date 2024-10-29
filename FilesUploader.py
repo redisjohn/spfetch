@@ -2,6 +2,7 @@ import files_sdk
 from files_sdk import File
 from Logger import Logger
 import os
+from CredentialVault import CredentialVault
 
 class FilesUploader:
 
@@ -9,21 +10,22 @@ class FilesUploader:
     destination_path = "/Uploads"
 
     @staticmethod
-    def set_api_key(api_key):
+    def set_api_key():
+        try:
+            junk, api_key = CredentialVault.decrypt_credentials("api.key")
+            files_sdk.set_api_key(api_key)
+        except Exception as e:
+            raise Exception("API Key") from e
 
-        files_sdk.set_api_key(api_key)
-      
     @staticmethod
     def upload_file(source_file):
-        
         fname = os.path.basename(source_file)
         remote_file = os.path.join(FilesUploader.destination_path,fname)
-
+        FilesUploader.set_api_key()
         try: 
             files_sdk.file.upload_file(source_file,remote_file)
         except Exception as e:
-            #logger.exception(e,f"Error uploading {source_file}")
-            print(e)
+            raise Exception("Upload Error") from e
        
     @staticmethod 
     def upload_bytes(source_bytes,fname):
@@ -32,8 +34,7 @@ class FilesUploader:
             with files_sdk.open(remote_file, "wb") as f:
                 f.write(source_bytes)            
         except Exception as e:
-            #logger.exceptions(e,f'Error Uploading File')
-            print(e)
+            raise Exception("Upload Error") from e 
 
 '''
 if __name__ == "__main__":

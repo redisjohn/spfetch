@@ -4,6 +4,7 @@ import requests
 import json
 from TarProcessor import TarProcessor
 from Logger import Logger
+from FilesUploader import FilesUploader
 
 class SupportPackage:
 
@@ -152,36 +153,57 @@ class SupportPackage:
             print(f"Error License Info for {fqdn}: {e}")                  
         
     @staticmethod
-    def download_package(logger,fqdn, username, password,path,db,reduce_tar_size):
+    def download_package(logger,fqdn, username, password,path,db,reduce_tar_size,save_to_file=True,upload=True,dry_run=False):
+
         try:
+            output_bytes = []
             requests.packages.urllib3.disable_warnings()
             if db != 0:
-                download_url = f"https://" + fqdn + ":9443/v1/debuginfo/node/bdb/{db}"
+                logger.info(f"Database:{db}")
+                download_url = f"https://" + fqdn + f":9443/v1/debuginfo/node/bdb/{db}"
             else:
                 #check for version 7.4.2 and set download_url 
                 download_url = "https://" + fqdn + ":9443/v1/debuginfo/all"
                 #download_url = "https://" + fqdn + ":9443/v1/bdbs/debuginfo"   7.4.2 or higher
             
-            logger.info(f"({fqdn}):Starting Download")        
-            response = requests.get(download_url, auth=(username, password), verify=False)
-            response.raise_for_status()
+            logger.info(f"({fqdn}):Starting Download")
+            if not dry_run:        
+                response = requests.get(download_url, auth=(username, password), verify=False)
+                response.raise_for_status()
+            else:
+                logger.info("Dryrun Only")
+            
             fname = SupportPackage.get_fname(fqdn,path) 
 
-            if (reduce_tar_size):
+            if reduce_tar_size:
                 logger.info(f"({fqdn}):Reducing Package Size")
-                tar_processor_bytes = TarProcessor()
-                savings, original_size, new_size, new_tar_bytes = tar_processor_bytes.process_from_bytes(response.content)
-
-                logger.info(f"({fqdn}):Original tar size: {original_size} bytes")
-                logger.info(f"({fqdn}):New tar size: {new_size} bytes")
-                logger.info(f"({fqdn}):Storage savings: {savings} bytes")
-
-                with open(fname, "wb") as f:
-                    f.write(new_tar_bytes)
+                if not dry_run:
+                    tar_processor_bytes = TarProcessor()                
+                    savings, original_size, new_size, output_bytes = tar_processor_bytes.process_from_bytes(response.content)
+                    logger.info(f"({fqdn}):Original tar size: {original_size}MB")
+                    logger.info(f"({fqdn}):New tar size: {new_size}MB")
+                    logger.info(f"({fqdn}):Storage savings: {savings}MB")
             else:
-                with open(fname, "wb") as f:
-                    f.write(response.content)
+                if not dry_run:
+                    output_bytes = response.content 
 
-            logger.info(f"({fqdn}):Support package downloaded successfully.")
+            if (save_to_file):
+                if not dry_run:    
+                    with open(fname, "wb") as f:
+                        f.write(output_bytes)
+                logger.info(f"({fqdn}):Support Package Downloaded and Saved:({fname})")
+
+            if upload:
+                if not reduce_tar_size:
+                    logger.info(f"{fqdn}:Uploading Bloated Support Packages Not Supported")
+                else:
+                    logger.info(f"({fqdn}):Uploading to redis.io")
+                    if not dry_run:
+                        try:
+                            FilesUploader.upload_file(fname)
+                            logger.info(f"({fqdn}):Support package uploaded successfully.")
+                        except Exception as e:
+                            logger.exception(e,"Error During Upload")
+                                    
         except requests.exceptions.RequestException as e:
             logger.exception(e,f"({fqdn}):Error downloading support package")
