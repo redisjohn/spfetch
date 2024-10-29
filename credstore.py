@@ -49,6 +49,8 @@ def recover_vault(secret):
     except Exception as e:
         print(f"Fatal Error: {str(e)}")
         exit(-1)
+def update_api_key(key):
+    CredentialVault.encrypt_credentials(".api.key","key",key)
 
 def main():
     parser = argparse.ArgumentParser(description="Redis Enterprise Cluster Credentials Encrypted Store")
@@ -59,17 +61,21 @@ def main():
 
     # Subparser for the 'add' command
     parser_add = subparsers.add_parser("add", help="Add encrypted credentials for a cluster")
-    parser_add.add_argument("--cluster", help="Cluster FQDN",required=True)
+    parser_add.add_argument("--fqdn", help="Cluster FQDN",required=True)
     parser_add.add_argument("--user", help="Username", required=True)
     parser_add.add_argument("--pwd", help="Password",required=True)
-    parser_add.add_argument("--path", default="vault", help="Vault path (default: vault)")
+    #parser_add.add_argument("--path", default="vault", help="Vault path (default: vault)")
     # Subparser for the get command
     parser_add = subparsers.add_parser("get", help="Get Credentials for a cluster")
-    parser_add.add_argument("--cluster", help="Cluster FQDN",required=True)
-    parser_add.add_argument("--path", default="vault", help="Vault path (default: vault)")
+    parser_add.add_argument("--fqdn", help="Cluster FQDN",required=True)
+    #parser_add.add_argument("--path", default="vault", help="Vault path (default: vault)")
     # Subparser for the 'recover' command
     parser_recover = subparsers.add_parser("recover", help="Recovery Vault from Secret")
     parser_recover.add_argument("--secret", help="Secret key for vault recovery",required=True)
+    # Subparser for the 'apikey' command
+    parser_apikey = subparsers.add_parser("apikey", help="Save Upload API Key")
+    parser_apikey.add_argument("--key", help="API Key",required=True)
+
     #subprocess for reset command
     parser_recover = subparsers.add_parser("reset", help="Delete Vault Secret")
     args = parser.parse_args()
@@ -77,9 +83,9 @@ def main():
     if args.command == "init":
         initialize_vault()
     elif args.command == "add":
-        add_credentials(args.cluster, args.user, args.pwd, args.path)
+        add_credentials(args.fqdn, args.user, args.pwd)
     elif args.command == "get":
-        get_credentials(args.cluster,args.path)
+        get_credentials(args.fqdn)
     elif args.command == "reset":
         print("This will remove the vault secret from the system keyring")
         confirmChoice()
@@ -88,6 +94,9 @@ def main():
         print("This will replace the vault secret from the system keyring")
         confirmChoice()
         recover_vault(args.secret)
+    elif args.command == "apikey":
+        update_api_key(args.key)
+        print("API Key Saved")
     else:
         parser.print_help()
 
