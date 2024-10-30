@@ -127,7 +127,7 @@ def process(logger,fqdn,user,pwd,path,args):
 
             if (args.nosave):
                 if args.upload:
-                    logger.info(f"({{fqdn}}):Support Package will not be saved to disk")
+                    logger.info(f"({fqdn}):Support Package will not be saved to disk")
                     save_to_file = False
 
             db = 0 if (args.db is None) else args.db

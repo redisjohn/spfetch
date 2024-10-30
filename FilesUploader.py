@@ -15,7 +15,6 @@ class FilesUploader:
             junk, api_key = CredentialVault.decrypt_credentials(".api.key")
             files_sdk.set_api_key(api_key)
         except Exception as e:
-            print(e)
             raise Exception("API Key") from e
 
     @staticmethod
@@ -26,16 +25,21 @@ class FilesUploader:
         try: 
             files_sdk.file.upload_file(source_file,remote_file)
         except Exception as e:
+            print(e)
             raise Exception("Upload Error") from e
        
     @staticmethod 
-    def upload_bytes(source_bytes,fname):
+    def upload_bytes(source_bytes,source_file):
         try:
+            fname = os.path.basename(source_file)
             remote_file = os.path.join(FilesUploader.destination_path,fname)
+            FilesUploader.set_api_key()
             with files_sdk.open(remote_file, "wb") as f:
                 f.write(source_bytes)            
         except Exception as e:
+            print(e)
             raise Exception("Upload Error") from e 
+          
 
 '''
 if __name__ == "__main__":

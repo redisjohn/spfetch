@@ -200,7 +200,8 @@ class SupportPackage:
                     logger.info(f"({fqdn}):Uploading to redis.io")
                     if not dry_run:
                         try:
-                            FilesUploader.upload_file(fname)
+                            FilesUploader.upload_bytes(output_bytes,fname)
+                            #FilesUploader.upload_file(fname)
                             logger.info(f"({fqdn}):Support package uploaded successfully.")
                         except Exception as e:
                             logger.exception(e,"Error During Upload")
