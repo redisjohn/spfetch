@@ -47,7 +47,8 @@ credstore is a companion utility that works with spfetch to manage credentials. 
 
 1. Install the following dependencies. 
 
-    	pip install keyring
+    	pip install requests
+		pip install keyring
     	pip install cryptography
     	pip install openpyxl
     	pip install Files.com
