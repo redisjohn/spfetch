@@ -6,15 +6,16 @@ from CredentialVault import CredentialVault
 
 class FilesUploader:
 
-  
-    destination_path = "/Uploads"
+    destination_path = "/RLEC_Customers/Uploads"  
+    #destination_path = "/Uploads"
 
     @staticmethod
     def set_api_key():
         try:
-            junk, api_key = CredentialVault.decrypt_credentials("api.key")
+            junk, api_key = CredentialVault.decrypt_credentials(".api.key")
             files_sdk.set_api_key(api_key)
         except Exception as e:
+            print(e)
             raise Exception("API Key") from e
 
     @staticmethod
