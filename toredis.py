@@ -39,6 +39,6 @@ if not args.bloat:
 else:
     upload_bytes = file_bytes
 
-logger.info(f"Uploading {filename}to Redis.io")
+logger.info(f"Uploading {filename} to Redis.io")
 
 FilesUploader.upload_bytes(file_bytes,filename)
