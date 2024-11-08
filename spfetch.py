@@ -1,4 +1,4 @@
-#/usr/bin/python3
+#!/usr/bin/python3
 import argparse
 from SupportPackage import SupportPackage
 from CredentialVault import CredentialVault
@@ -196,7 +196,8 @@ def main():
     else:
         path = "output"   
     
-    fqdn = args.fqdn
+    fqdn = args.fqdn if args.fqdn != '.' else '*'
+
     fqdns = FQDNs.get(fqdn)
 
     #  user pwd parameters override if found in vault 
