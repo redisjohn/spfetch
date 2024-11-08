@@ -1,4 +1,4 @@
-
+#/usr/bin/python3
 import argparse
 from SupportPackage import SupportPackage
 from CredentialVault import CredentialVault
@@ -82,7 +82,7 @@ def xls(logger,fqdns,path):
             cluster['version_mismatch'] = nodeinfo['mismatch']
  
             # create sheet for fqdn 
-            response = SupportPackage.get_bdb_names(fqdn,user,pwd)
+            response = SupportPackage.get_bdb_names(logger,fqdn,user,pwd)
             bdb_data = SupportPackage.deserialize_bdb_info(fqdn,response)            
             generator.CreateSheet(fqdn)
             generator.AddData(fqdn,bdb_data)
@@ -100,7 +100,7 @@ def process(logger,fqdn,user,pwd,path,args):
 
     if (args.list):
         try: 
-            response = SupportPackage.get_bdb_names(fqdn,user,pwd)
+            response = SupportPackage.get_bdb_names(logger,fqdn,user,pwd)
             if (args.json):
                 bdb_info = SupportPackage.deserialize_bdb_info(fqdn,response)
                 bdb = {}
@@ -110,7 +110,7 @@ def process(logger,fqdn,user,pwd,path,args):
             else:
                 SupportPackage.tablulate_bdb_info(fqdn,response)
         except Exception as e:
-            print(f"Error Getting Database Names:{str(e)}")
+            logger.exception(e,f"Error Processing Command")
     elif (args.license):
         response = SupportPackage.get_license_info(fqdn,user,pwd)
         license = SupportPackage.deserialize_license_info(fqdn,response)
@@ -146,6 +146,9 @@ def process(logger,fqdn,user,pwd,path,args):
 # Process command arguments for specified fqdn
 #
 def process_args_single_fqdn(logger,fqdn,args,path):
+        user = ''
+        pwd = ''
+
         if (args.user is not None):
             user = args.user
             if (args.pwd is None):
@@ -188,25 +191,25 @@ def main():
     args = parser.parse_args()
    
 
-    user = ''
-    pwd = '' 
-
     if args.path:
         path = args.path
     else:
         path = "output"   
     
     fqdn = args.fqdn
-    fqdns = []
-
     fqdns = FQDNs.get(fqdn)
 
-    if  len(fqdns) == 1:
-        process_args_single_fqdn(logger,fqdns[0],args,path)
-
+    #  user pwd parameters override if found in vault 
+    # also do not allow if user/pwd parameters supplied with wildcard fqdn like (*.redis.test) 
+    if (args.user is not None):
+        if len(fqdns) < 2 :
+            if (len(fqdns) == 1):
+                if (fqdns[0] != fqdn):
+                    logger.error(f"fqdn {fqdn} is not compatible with --user")                    
+                    return
+            process_args_single_fqdn(logger,fqdn,args,path)
     elif (len(fqdns) == 0):
         logger.error("no matches found")
-
     else:
         if not args.xls:
             for fqdn in fqdns:

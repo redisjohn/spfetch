@@ -27,6 +27,5 @@ class FQDNs:
             # Check if the filename matches the FQDN pattern
             if FQDNs.FQDN_PATTERN.match(filename):
                 fqdn_files.append(filename)
-
-
+                
         return fqdn_files

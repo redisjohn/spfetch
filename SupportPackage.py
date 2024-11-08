@@ -118,7 +118,9 @@ class SupportPackage:
     
 
     @staticmethod
-    def get_bdb_names(fqdn,username,password):
+    def get_bdb_names(logger,fqdn,username,password):
+
+        response = None
         try:
             requests.packages.urllib3.disable_warnings()
             #download_url = "https://" + fqdn + ":9443/v1/bdbs?fields=uid,name,version,shards_count,slave_ha"                 
@@ -126,8 +128,13 @@ class SupportPackage:
             response = requests.get(download_url, auth=(username, password), verify=False)            
             response.raise_for_status()
             return response.text
-        except requests.exceptions.RequestException as e:
-            print(f"({fqdn}):Error Getting Database Names")                  
+        except requests.exceptions.ConnectionError as e:
+                logger.exception(e,f"({fqdn}):Connection Error Occured")
+        except requests.exceptions.HTTPError as e:
+            if (response.status_code == 401):
+                logger.exception(e,f"({fqdn}):{response.status_code}:Invalid Credentials")
+            else:
+                logger.exception(e,f"({fqdn}):HTTP Error")                  
 
     @staticmethod
     def deserialize_license_info(fqdn,response):
