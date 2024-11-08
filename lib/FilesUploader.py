@@ -1,8 +1,8 @@
+import os
 import files_sdk
 from files_sdk import File
-from Logger import Logger
-import os
-from CredentialVault import CredentialVault
+from lib.Logger import Logger
+from lib.CredentialVault import CredentialVault
 
 class FilesUploader:
 

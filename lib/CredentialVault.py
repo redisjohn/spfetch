@@ -1,5 +1,5 @@
 from cryptography.fernet import Fernet
-from KeyVault import KeyVault
+from lib.KeyVault import KeyVault
 
 import os
 

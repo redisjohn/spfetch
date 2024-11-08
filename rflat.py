@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 import argparse
-from SupportPackage import SupportPackage
-from CredentialVault import CredentialVault
-from ExcelReportGenerator import ExcelReportGenerator
-from Logger import Logger
-from Fqdns import FQDNs
+from lib.SupportPackage import SupportPackage
+from lib.CredentialVault import CredentialVault
+from lib.ExcelReportGenerator import ExcelReportGenerator
+from lib.Logger import Logger
+from lib.Fqdns import FQDNs
 from datetime import datetime
 import os
 import re

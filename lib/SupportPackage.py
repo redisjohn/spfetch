@@ -2,9 +2,9 @@ import os
 from datetime import datetime
 import requests
 import json
-from TarProcessor import TarProcessor
-from Logger import Logger
-from FilesUploader import FilesUploader
+from lib.TarProcessor import TarProcessor
+from lib.Logger import Logger
+from lib.FilesUploader import FilesUploader
 
 class SupportPackage:
 

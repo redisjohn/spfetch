@@ -1,6 +1,6 @@
 import os
 import re
-from CredentialVault import CredentialVault
+from lib.CredentialVault import CredentialVault
 
 class FQDNs:
     # FQDN regex pattern: at least one label, a dot, and a top-level domain
