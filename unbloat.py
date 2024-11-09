@@ -6,7 +6,7 @@ from lib.FilesUploader import FilesUploader
 from lib.Logger import Logger
 from pathlib import Path
 
-logger = Logger(name='MyLogger', facility='toredis', log_to_file=False, filename='logs/app')
+logger = Logger(name='MyLogger', facility='unbloat', log_to_file=False, filename='logs/app')
 # Set up argument parser
 parser = argparse.ArgumentParser(description="Remove Bloat from Support Packages")
 parser.add_argument("file", help="Path to the file")

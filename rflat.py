@@ -186,7 +186,7 @@ def main():
     parser.add_argument("--license",action='store_true',help="List Databases Id and Names")
     parser.add_argument("--xls",action='store_true',help="Generate Excel Inventory Report For All Clusters")
     
-    logger = Logger(name='MyLogger', facility='spfetch', log_to_file=False, filename='logs/app')
+    logger = Logger(name='MyLogger', facility='rflat', log_to_file=False, filename='logs/app')
 
     args = parser.parse_args()
    
