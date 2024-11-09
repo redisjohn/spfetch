@@ -210,7 +210,6 @@ You can get a list of database ids using the following command:
 
 rflat by default will attempt to optimize a support package output by trimming log files.  This is the default behavior.  To bypass optimization using the `--bloat ` flag.   This is not compatible for use with `--upload`
 
-
 #### Overriding support package download location
 
 rflat by default will store all output generated in the `output `folder under the main rflat directory.  To override this location use the `--path` flag.  
@@ -414,6 +413,38 @@ wish to remove.
 To restore the vault to a different system, you must have a backup of the vault directory and have the secret key generated when the vault was initiated.   After the vault directory is restored on the new system, run the following command:
 
 	./credstore recover {secretkey}  
+
+
+## unbloat
+
+
+For support packages that were not fetched with rflat, you can use unbloat to optimize the size and optionally upload them to redis.  
+
+	usage: unbloat [-h] [--bloat] [--upload] [--nosave] file
+	
+	Remove Bloat from Support Packages
+	
+	positional arguments:
+	  filePath to the file
+	
+	options:
+	  -h, --help  	show this help message and exit
+	  --bloat 		Leave it Bloated
+	  --upload		upload to redis.io
+	  --nosave		Do not save`
+	
+
+Example: 
+
+
+    unbloat --upload output\debuginfo.cluster.redis.test_20241108172328.tar.gz 
+	
+	Filename:(debuginfo.cluster.redis.test_20241108172328.tar.gz)
+	2024-11-08 21:02:24,unbloat,INFO,Original tar size: 2.09MB
+	2024-11-08 21:02:24,unbloat,INFO,New tar size: 2.09MB
+	2024-11-08 21:02:24,unbloat,INFO,:Storage savings: 0.0MB
+	2024-11-08 21:02:24,unbloat,INFO,Uploading debuginfo.cluster.redis.test_20241108172328.tar.gz to Redis.io
+	2024-11-08 21:02:26,unbloat,INFO,Save:output\unbloat-debuginfo.cluster.redis.test_20241108172328.tar.gz
 
 
 ## Considerations for running python 
