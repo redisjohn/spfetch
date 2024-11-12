@@ -149,7 +149,7 @@ You can use a single . to indicate all FQDNs
 
 	./rflat --list . 
 
-Generally using `*` with most wildcard expressions should work. When in doubt using single quotes. 
+Generally using `*` with most wildcard expressions should work. When in doubt use single quotes. 
 Examples:
 
 	./rflat *.cluster.test
