@@ -1,6 +1,7 @@
+#!/usr/bin/python3
 import argparse
-from CredentialVault import CredentialVault
-from KeyVault import KeyVault
+from lib.CredentialVault import CredentialVault
+from lib.KeyVault import KeyVault
 
 def confirmChoice():
     choice = input("Confirm [Y/N] ").lower()

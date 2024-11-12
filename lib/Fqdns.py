@@ -1,5 +1,6 @@
 import os
 import re
+from lib.CredentialVault import CredentialVault
 
 class FQDNs:
     # FQDN regex pattern: at least one label, a dot, and a top-level domain
@@ -18,15 +19,15 @@ class FQDNs:
 
 
     @staticmethod
-    def get(pattern,directory_path="vault"):
+    def get(pattern):
         fqdn_files = []
 
-        files = FQDNs.match_filenames(os.listdir(directory_path),pattern)
+        vault_path = CredentialVault.getVaultDir()
+        files = FQDNs.match_filenames(os.listdir(vault_path),pattern)
 
         for filename in files:
             # Check if the filename matches the FQDN pattern
             if FQDNs.FQDN_PATTERN.match(filename):
                 fqdn_files.append(filename)
-
-
+                
         return fqdn_files
