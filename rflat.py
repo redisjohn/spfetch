@@ -5,6 +5,7 @@ from lib.CredentialVault import CredentialVault
 from lib.ExcelReportGenerator import ExcelReportGenerator
 from lib.Logger import Logger
 from lib.Fqdns import FQDNs
+from lib.Resolver import Resolver
 from datetime import datetime
 import os
 import re
@@ -38,7 +39,7 @@ def get_fname(path):
                 os.makedirs(path)
             return os.path.join(path,fname)
 
-def xls(logger,fqdns,path):
+def xls(logger,fqdns,resolver,path):
     clusters = []
 
     # Create a new instance of the generator
@@ -54,12 +55,12 @@ def xls(logger,fqdns,path):
 
             # get license and node info for cluster sheet
             logger.info(f"Processing Data for:({fqdn})")
-
-            response = SupportPackage.get_license_info(fqdn,user,pwd)
+            
+            response = SupportPackage.get_license_info(fqdn,resolver.get(fqdn),user,pwd)
             #license = SupportPackage.deserialize_license_info(fqdn,response)
             license = json.loads(response)
 
-            response = SupportPackage.get_nodes(logger,fqdn,user,pwd)
+            response = SupportPackage.get_nodes(logger,fqdn,resolver.get(fqdn),user,pwd)
             nodeinfo = SupportPackage.summarize_node_info(response)
             
             cluster = {}
@@ -82,7 +83,7 @@ def xls(logger,fqdns,path):
             cluster['version_mismatch'] = nodeinfo['mismatch']
  
             # create sheet for fqdn 
-            response = SupportPackage.get_bdb_names(logger,fqdn,user,pwd)
+            response = SupportPackage.get_bdb_names(logger,fqdn,resolver.get(fqdn),user,pwd)
             bdb_data = SupportPackage.deserialize_bdb_info(fqdn,response)            
             generator.CreateSheet(fqdn)
             generator.AddData(fqdn,bdb_data)
@@ -96,11 +97,10 @@ def xls(logger,fqdns,path):
     file_name = generator.SaveWorkbook(get_fname(path))   
     logger.info(f"Workbook saved as '{file_name}'.")
 
-def process(logger,fqdn,user,pwd,path,args):
-
+def process(logger,fqdn,ip,user,pwd,path,args):
     if (args.list):
         try: 
-            response = SupportPackage.get_bdb_names(logger,fqdn,user,pwd)
+            response = SupportPackage.get_bdb_names(logger,fqdn,ip,user,pwd)
             if (args.json):
                 bdb_info = SupportPackage.deserialize_bdb_info(fqdn,response)
                 bdb = {}
@@ -112,7 +112,7 @@ def process(logger,fqdn,user,pwd,path,args):
         except Exception as e:
             logger.exception(e,f"Error Processing Command")
     elif (args.license):
-        response = SupportPackage.get_license_info(fqdn,user,pwd)
+        response = SupportPackage.get_license_info(fqdn,ip,user,pwd)
         license = SupportPackage.deserialize_license_info(fqdn,response)
         print(json.dumps(license, indent=4)) 
     else:
@@ -132,7 +132,7 @@ def process(logger,fqdn,user,pwd,path,args):
 
             db = 0 if (args.db is None) else args.db
 
-            SupportPackage.download_package(logger,fqdn, user,pwd,path,db,reduce_tar_size,save_to_file=save_to_file,upload=args.upload,dry_run=args.dryrun) 
+            SupportPackage.download_package(logger,fqdn,ip,user,pwd,path,db,reduce_tar_size,save_to_file=save_to_file,upload=args.upload,dry_run=args.dryrun) 
         
             keep = int(args.keep) if (args.keep is not None) else 1
 
@@ -145,7 +145,7 @@ def process(logger,fqdn,user,pwd,path,args):
 #
 # Process command arguments for specified fqdn
 #
-def process_args_single_fqdn(logger,fqdn,args,path):
+def process_args_single_fqdn(logger,fqdn,ip,args,path):
         user = ''
         pwd = ''
 
@@ -163,7 +163,7 @@ def process_args_single_fqdn(logger,fqdn,args,path):
                 logger.exception(e,f"Fatal Error")
                 exit(-1)
         try:
-            process(logger,fqdn,user,pwd,path,args)
+            process(logger,fqdn,ip,user,pwd,path,args)
         except Exception as e:
             logger.exception(e,f"Fatal Error")
             exit(-1)
@@ -188,6 +188,9 @@ def main():
     
     logger = Logger(name='MyLogger', facility='rflat', log_to_file=False, filename='logs/app')
 
+    resolver = Resolver()
+    resolver.load()
+    
     args = parser.parse_args()
    
 
@@ -207,8 +210,8 @@ def main():
             if (len(fqdns) == 1):
                 if (fqdns[0] != fqdn):
                     logger.error(f"fqdn {fqdn} is not compatible with --user")                    
-                    return
-            process_args_single_fqdn(logger,fqdn,args,path)
+                    return            
+            process_args_single_fqdn(logger,fqdn,resolver.get(fqdn),args,path)
     elif (len(fqdns) == 0):
         logger.error("no matches found")
     else:
@@ -216,11 +219,11 @@ def main():
             for fqdn in fqdns:
                 try:
                     user,pwd = CredentialVault.decrypt_credentials(fqdn)
-                    process(logger,fqdn,user,pwd,path,args) 
+                    process(logger,fqdn,resolver.get(fqdn),user,pwd,path,args) 
                 except Exception as e:
                     logger.exception(e,f"({fqdn}):Error during Request")
         else:
-            xls(logger,fqdns,path)
+            xls(logger,fqdns,resolver,path)
             keep = int(args.keep) if (args.keep is not None) else 5
             sort_and_keep_latest_files(logger,path,"inventory",keep)    
     

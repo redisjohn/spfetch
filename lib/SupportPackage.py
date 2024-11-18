@@ -52,7 +52,8 @@ class SupportPackage:
         return node_info
     
     @staticmethod
-    def get_nodes(logger,fqdn,username,password):
+    def get_nodes(logger,fqdn,ip,username,password):
+        print(f"IP=({ip})")
         try:
             requests.packages.urllib3.disable_warnings()
             download_url = "https://" + fqdn + ":9443/v1/nodes"                 
@@ -118,8 +119,8 @@ class SupportPackage:
     
 
     @staticmethod
-    def get_bdb_names(logger,fqdn,username,password):
-
+    def get_bdb_names(logger,fqdn,ip,username,password):
+        print(f"IP=({ip})")
         response = None
         try:
             requests.packages.urllib3.disable_warnings()
@@ -149,7 +150,8 @@ class SupportPackage:
         return output   
     
     @staticmethod
-    def get_license_info(fqdn,username,password):
+    def get_license_info(fqdn,ip,username,password):
+        print(f"IP=({ip})")
         try:
             requests.packages.urllib3.disable_warnings()
             download_url = "https://" + fqdn + ":9443/v1/license"                 
@@ -160,7 +162,8 @@ class SupportPackage:
             print(f"Error License Info for {fqdn}: {e}")                  
         
     @staticmethod
-    def download_package(logger,fqdn, username, password,path,db,reduce_tar_size,save_to_file=True,upload=True,dry_run=False):
+    def download_package(logger,fqdn,ip, username, password,path,db,reduce_tar_size,save_to_file=True,upload=True,dry_run=False):
+        print(f"IP=({ip})")
 
         try:
             output_bytes = []
