@@ -53,9 +53,9 @@ class SupportPackage:
     
     @staticmethod
     def get_nodes(logger,fqdn,ip,username,password):
-        print(f"IP=({ip})")
         try:
             requests.packages.urllib3.disable_warnings()
+            host = fqdn if (ip is None) else ip
             download_url = "https://" + fqdn + ":9443/v1/nodes"                 
             response = requests.get(download_url, auth=(username, password), verify=False)            
             response.raise_for_status()
@@ -120,12 +120,11 @@ class SupportPackage:
 
     @staticmethod
     def get_bdb_names(logger,fqdn,ip,username,password):
-        print(f"IP=({ip})")
         response = None
         try:
             requests.packages.urllib3.disable_warnings()
-            #download_url = "https://" + fqdn + ":9443/v1/bdbs?fields=uid,name,version,shards_count,slave_ha"                 
-            download_url = "https://" + fqdn + ":9443/v1/bdbs"                 
+            host = fqdn if (ip is None) else ip
+            download_url = "https://" + host + ":9443/v1/bdbs"                 
             response = requests.get(download_url, auth=(username, password), verify=False)            
             response.raise_for_status()
             return response.text
@@ -151,10 +150,10 @@ class SupportPackage:
     
     @staticmethod
     def get_license_info(fqdn,ip,username,password):
-        print(f"IP=({ip})")
         try:
             requests.packages.urllib3.disable_warnings()
-            download_url = "https://" + fqdn + ":9443/v1/license"                 
+            host = fqdn if (ip is None) else ip
+            download_url = "https://" + host + ":9443/v1/license"                 
             response = requests.get(download_url, auth=(username, password), verify=False)            
             response.raise_for_status()
             return response.text
@@ -168,13 +167,14 @@ class SupportPackage:
         try:
             output_bytes = []
             requests.packages.urllib3.disable_warnings()
+            host = fqdn if (ip is None) else ip
             if db != 0:
                 logger.info(f"Database:{db}")
-                download_url = f"https://" + fqdn + f":9443/v1/debuginfo/node/bdb/{db}"
+                download_url = f"https://" + host + f":9443/v1/debuginfo/node/bdb/{db}"
             else:
                 #check for version 7.4.2 and set download_url 
-                download_url = "https://" + fqdn + ":9443/v1/debuginfo/all"
-                #download_url = "https://" + fqdn + ":9443/v1/bdbs/debuginfo"   7.4.2 or higher
+                download_url = "https://" + host + ":9443/v1/debuginfo/all"
+                #download_url = "https://" + host + ":9443/v1/bdbs/debuginfo"   7.4.2 or higher
             
             logger.info(f"({fqdn}):Starting Download")
             if not dry_run:        
