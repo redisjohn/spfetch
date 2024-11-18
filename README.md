@@ -398,10 +398,33 @@ To initialize the vault run the following command:
 
 You should save the secret in a secure location.  This will allow you to move the credentials vault to another system if needed in the future.  
 
-Once the vault is initialized you can store encrypted credentials for each cluster. 
+Once the vault is initialized you can store encrypted credentials for each cluster.
 
-	./credstore add {fqdn} --user {username} --pwd {password} 
+	credstore add --fqdn cluster.stark.local --user tony.stark@stark.com --pwd myP@$$W0RD
 
+#### Managing Credentials in environments without DNS.  
+
+Note that the FQDN is required but an IP address is optional.  This can be used in environments that do not use DNS.  For clusters with IP address specified, connections to the Redis Software REST API will be done via the provided IP address instead of the FQDN.  The FQDN is still required but is arbitrary and will only be used for reporting purposes and will never be resolved.  The FQDN will always be associated with the IP address provided. 
+ 
+
+The file resolver.json contains a persisted dictionary of all full qualified domain names that are resolved by rflat to IP addresses.  This file can be edited to remove or change entries as needed. 
+
+
+	credstore add [-h] --fqdn FQDN [--ip IP] --user USER --pwd PWD
+
+	options:
+	  -h, --help   show this help message and exit
+	  --fqdn FQDN  Cluster FQDN
+	  --ip IP      Cluster IP Address
+	  --user USER  Username
+	  --pwd PWD    Password 
+
+
+Example:
+
+	credstore add --fqdn cluster.stark.local --ip 10.46.20.1 --user tony.stark@stark.com --pwd myP@$$W0RD
+
+If the above example, any REST API call for cluster.stark.local will be replaced \with the IP address 10.46.20.1.   
 
 #### Removing a cluster from the vault
 
