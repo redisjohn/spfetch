@@ -2,6 +2,7 @@
 import argparse
 from lib.CredentialVault import CredentialVault
 from lib.KeyVault import KeyVault
+from lib.Resolver import Resolver
 
 def confirmChoice():
     choice = input("Confirm [Y/N] ").lower()
@@ -63,6 +64,7 @@ def main():
     # Subparser for the 'add' command
     parser_add = subparsers.add_parser("add", help="Add encrypted credentials for a cluster")
     parser_add.add_argument("--fqdn", help="Cluster FQDN",required=True)
+    parser_add.add_argument("--ip", help="Cluster IP Address",required=False)
     parser_add.add_argument("--user", help="Username", required=True)
     parser_add.add_argument("--pwd", help="Password",required=True)
     #parser_add.add_argument("--path", default="vault", help="Vault path (default: vault)")
@@ -85,6 +87,11 @@ def main():
         initialize_vault()
     elif args.command == "add":
         add_credentials(args.fqdn, args.user, args.pwd)
+        if (args.ip):
+            resolver = Resolver()
+            resolver.load()
+            resolver.saveHost(args.fqdn,args.ip)
+            resolver.persist()
     elif args.command == "get":
         get_credentials(args.fqdn)
     elif args.command == "reset":

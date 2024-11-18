@@ -230,7 +230,7 @@ rflat provides several other functions to audit cluster deployments.
 
 The license command provides a quick list of license information for one or more clusters. 
 
-    $./spfet --license *
+    $./rlflat --license *
     {
     "cluster": "cluster.redis.test",
     "expired": true,
