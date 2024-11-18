@@ -433,7 +433,7 @@ wish to remove.
 
 #### Moving the Credential Vault to another System
 
-To restore the vault to a different system, you must have a backup of the vault directory and have the secret key generated when the vault was initiated.   After the vault directory is restored on the new system, run the following command:
+To restore the vault to a different system, you must have a backup of the vault directory and have the secret key generated when the vault was initiated.  If you are not using DNS, you should also copy the resolver.json file which resides in the main rflat directory.  After the vault directory is restored on the new system, run the following command:
 
 	./credstore recover {secretkey}  
 
