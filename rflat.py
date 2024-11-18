@@ -169,7 +169,7 @@ def process_args_single_fqdn(logger,fqdn,ip,args,path):
             exit(-1)
 
 def main():
-    parser = argparse.ArgumentParser(description="Redis Enterprise Audit Tool Version 0.9")
+    parser = argparse.ArgumentParser(description="Redis Enterprise Audit Tool Version 0.9.2")
 
     parser.add_argument("fqdn", help="Fully Qualified Domain Name of Cluster (wildcards supported if credentials in vault))") 
     parser.add_argument("--user", help="Username for authentication")
