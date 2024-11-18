@@ -404,7 +404,7 @@ Once the vault is initialized you can store encrypted credentials for each clust
 
 #### Managing Credentials in environments without DNS.  
 
-Note that the FQDN is required but an IP address is optional.  This can be used in environments that do not use DNS.  For clusters with IP address specified, connections to the Redis Software REST API will be done via the provided IP address instead of the FQDN.  The FQDN is still required but is arbitrary and will only be used for reporting purposes and will never be resolved.  The FQDN will always be associated with the IP address provided. 
+For the add sub command, the FQDN is required.  The optional IP argument can be used in environments that do not use DNS.  For clusters with IP address specified, connections to the Redis Software REST API will be done via the provided IP address instead of the FQDN.  Although, the FQDN is still required but is arbitrary and will only be used for reporting purposes and will never be resolved.  The FQDN will always be associated with the IP address provided. This behavior is similar to using a hostname file in Linux. 
  
 
 The file resolver.json contains a persisted dictionary of all full qualified domain names that are resolved by rflat to IP addresses.  This file can be edited to remove or change entries as needed. 
