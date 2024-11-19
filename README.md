@@ -1,4 +1,4 @@
-# rflat  (Redis Enterprise Cluster Auditing Tool)
+# rflat  (Redis Enterprise Fleet Auditing Tool)
 
 ----------
 
@@ -7,7 +7,7 @@ rflat is a utility for quickly downloading Redis Enterprise support packages and
 
 rflat accesses a Redis Enterprise Cluster using the Redis Enterprise Software API.  This requires a valid Redis Enterprise user and password for each cluster to be used.  This can be supplied explicitly on the command line but using the credential vault is recommended.  
 
-credstore is a companion utility that works with rflat to manage credentials. credstore encrypts and stores credentials that can be retrieved and used by rflat.  This allows automated scripts to use rflat in other tooling without having to expose user names and passwords in plain text.  It also provides a mechanism to collect support package and inventory information across multiple clusters using a single command.  
+credstore is a companion utility that works with rflat to manage credentials. credstore encrypts and stores credentials that can be retrieved and used by rflat.  This allows automated scripts to use rflat in other tooling without having to expose user names and passwords in plain text.  It also provides a mechanism to collect support package and inventory information across an entire fleet of clusters using a single command.  
 
 These tools are written in python. 
   
@@ -73,7 +73,11 @@ These tools are written in python.
 	
 1. Add cluster credentials to the vault. 
 
+		If you are using DNS:
     	./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pass mypassword
+
+		If you are not Using DNS, specify the --ip flag with the IP address of the cluster's primary (master) node. 
+    	./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pass mypassword --ip 10.7.8.6 
 
 1.	To fetch a support Package
 
@@ -404,8 +408,14 @@ Once the vault is initialized you can store encrypted credentials for each clust
 
 #### Managing Credentials in environments without DNS.  
 
-For the add sub command, the FQDN is required.  The optional IP argument can be used in environments that do not use DNS.  For clusters with IP address specified, connections to the Redis Software REST API will be done via the provided IP address instead of the FQDN.  Although, the FQDN is still required but is arbitrary and will only be used for reporting purposes and will never be resolved.  The FQDN will always be associated with the IP address provided. This behavior is similar to using a hostname file in Linux. 
- 
+The "add" sub command requires the FQDN of the cluster be specified.   The optional IP argument can be used in environments that do not use DNS.  By specifying the internal IP address of the primary node, connections to the Redis Software REST API will be done via the IP address of the primary node instead of the FQDN.  Although, the FQDN is still required, it is arbitrary and will only be used for reporting purposes and will never be resolved by DNS.  This behavior is similar to using a hostname file in Linux. 
+
+By default, REST API calls only work on the primary node.   This behavior can be overridden to allow any node in the cluster to always redirect to the primary node using the following rladmin command: 
+
+	rladmin cluster config handle_redirects enabled
+
+This will allow any internal IP address of any node in the cluster to be specified.    
+
 
 The file resolver.json contains a persisted dictionary of all full qualified domain names that are resolved by rflat to IP addresses.  This file can be edited to remove or change entries as needed. 
 
@@ -424,7 +434,7 @@ Example:
 
 	credstore add --fqdn cluster.stark.local --ip 10.46.20.1 --user tony.stark@stark.com --pwd myP@$$W0RD
 
-If the above example, any REST API call for cluster.stark.local will be replaced \with the IP address 10.46.20.1.   
+If the above example, any REST API call for cluster.stark.local will be replaced \with the IP address 10.46.20.1. This address should be the address of the primary node unless redirection is enabled as specified above.   
 
 #### Removing a cluster from the vault
 
