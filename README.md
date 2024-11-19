@@ -110,6 +110,19 @@ The only positional argument required to rflat is a cluster fully qualified doma
 	2024-10-28 11:50:32,rflat,INFO,(cluster.redis.test):Support package downloaded successfully.
 	2024-10-28 11:50:32,rflat,INFO,Purging Old Version:(output\debuginfo.cluster.redis.test_20241028112421.tar.gz)   
 
+
+You can also use the IP address of the master node if you specify the username and password.  
+
+	./rflat 10.7.0.164 --user test@myorg.com --pwd mypassword
+	2024-11-19 12:09:21,rflat,INFO,(10.7.0.164):Agressively Optimizing Support Package Size
+	2024-11-19 12:09:21,rflat,INFO,(10.7.0.164):Starting Download
+	2024-11-19 12:10:48,rflat,INFO,(10.7.0.164):Reducing Package Size
+	2024-11-19 12:11:01,rflat,INFO,(10.7.0.164):Original tar size: 249.38MB
+	2024-11-19 12:11:01,rflat,INFO,(10.7.0.164):New tar size: 2.07MB
+	2024-11-19 12:11:01,rflat,INFO,(10.7.0.164):Storage savings: 247.31MB
+	2024-11-19 12:11:01,rflat,INFO,(10.7.0.164):Support Package Downloaded and Saved:(output\debuginfo.10.7.0.164_20241119121048.tar.gz)
+
+
 #### Using the Credential Vault
 
 In order to avoid exposing user name and passwords, rflat supports adding cluster credentials to a encrypted vault.  Using this feature also allows the convenience of operating on multiple clusters with one command using wild cards for the fqdn.  If no password is provided, then rflat will automatically check the credentials vault and automatic retrieve the credentials for the specified cluster.  

@@ -162,7 +162,6 @@ class SupportPackage:
         
     @staticmethod
     def download_package(logger,fqdn,ip, username, password,path,db,reduce_tar_size,save_to_file=True,upload=True,dry_run=False):
-        print(f"IP=({ip})")
 
         try:
             output_bytes = []
