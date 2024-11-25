@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+
 import argparse
 from lib.CredentialVault import CredentialVault
 from lib.KeyVault import KeyVault
