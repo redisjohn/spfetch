@@ -74,10 +74,10 @@ These tools are written in python.
 1. Add cluster credentials to the vault. 
 
 		If you are using DNS:
-    	./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pass mypassword
+    	./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pwd mypassword
 
 		If you are not Using DNS, specify the --ip flag with the IP address of the cluster's primary (master) node. 
-    	./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pass mypassword --ip 10.7.8.6 
+    	./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pwd mypassword --ip 10.7.8.6
 
 1.	To fetch a support Package
 
