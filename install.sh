@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 ln -s credstore.py credstore
 ln -s rflat.py rflat 
 ln -s unbloat.py unbloat

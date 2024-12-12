@@ -178,7 +178,7 @@ rlec*
 
 ##### Bash wild card globing (Linux)
 
-For Linux using the `*` as wildcard character will not work.  On linux the bash shell will expand the wildcard  before the script is invoked and can causing an error.  
+For Linux using the `*` as wildcard character will not work.  On linux the bash shell will expand the wildcard  before the script is invoked and will cause an error.  
 
 There are several ways to handle this.
 
