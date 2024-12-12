@@ -3,22 +3,21 @@
 ----------
 
 
-rflat is a utility for quickly downloading Redis Enterprise support packages and generating audit reports for Redis Enterprise Software deployments.  
+rflat is a utility for quickly downloading Redis Enterprise support packages and provide audit reporting for a fleet of  Redis Enterprise Clusters.
 
 rflat accesses a Redis Enterprise Cluster using the Redis Enterprise Software API.  This requires a valid Redis Enterprise user and password for each cluster to be used.  This can be supplied explicitly on the command line but using the credential vault is recommended.  
 
 credstore is a companion utility that works with rflat to manage credentials. credstore encrypts and stores credentials that can be retrieved and used by rflat.  This allows automated scripts to use rflat in other tooling without having to expose user names and passwords in plain text.  It also provides a mechanism to collect support package and inventory information across an entire fleet of clusters using a single command.  
 
-These tools are written in python. 
+These tools have been developed using python. 
   
-
 	./rflat -h
-	usage: rflat [-h] [--user USER] [--pwd PWD] [--path PATH] [--db DB] [--upload] [--nosave] [--keep KEEP [--bloat] [--dryrun] [--list] [--json] [--license] [--xls] fqdn
+	usage: rflat [-h] [--user USER] [--pwd PWD] [--path PATH] [--db DB] [--upload] [--nosave] [--keep KEEP] [--bloat] [--dryrun] [--list] [--json] [--license] [--xls] fqdn
 
-	Redis Enterprise Audit Tool Version 0.9
+	Redis Enterprise Audit Tool V24.1212
 
 	positional arguments:
-		fqdn         Fully Qualified Domain Name of Cluster (wildcards supported if credentials in vault))
+		fqdn         Fully Qualified Domain Name of Cluster (wildcards supported if credentials in vault)
 
 	options:
 	  -h, --help   show this help message and exit
@@ -36,7 +35,6 @@ These tools are written in python.
 	  --license    List Databases Id and Names
 	  --xls        Generate Excel Inventory Report For All Clusters`
 
-
 ----------
 
 ## Quick Start
@@ -46,22 +44,17 @@ These tools are written in python.
 
 1. Ensure you have git installed. 
 
-1. Install the following dependencies. 
-
-    	pip install requests
-		pip install keyring
-    	pip install cryptography
-    	pip install openpyxl
-    	pip install Files.com
-
-1.  For Linux, run the following:
-  
-		chmod +x install.sh
-		./install.sh
-    
 1.  Retrieve the code from Github
 
-		git clone https://github.com/redisjohn/rflat
+		git clone https://github.com/redisjohn/spfetch
+
+1.  Install dependencies
+
+		pip install -r requirements.txt
+
+1.  For Linux, the following script is optional but will setup symbolic links and ensure all the python scripts can be executed. 
+  
+		./install.sh
     
 1. Initialize the Credential Vault 
 
@@ -89,8 +82,26 @@ These tools are written in python.
 
 ## Deep Dive
 
+- [Requirements for Redis Enterprise User Permissions](#requirements-for-redis-enterprise-user-permissions)
+- [Explicity Providing Credentials](#explicitly-providing-credentials)
+- [Using The Credential Vault](#using-the-credential-vault)
+- [Using Wild Cards with rflat](#using-wild-cards-with-rflat)
+- [Batch Processing Support Package Downloads](#batch-processing-support-packages-downloads)
+- [Pull A Support Package for a Single Database](#pulling-a-support-package-for-a-single-database)
+- [Optimizing Support Package Sizes](#optimization-of-support-package-size)
+- [Purging Old Files](#purging-old-files)
+- [Auditing Deployments](#auditing-deployments)
+- [Uploading Support Packages to Redis](#uploading-support-packages-to-redis)
+- [Generating an Inventory Report for a fleet of clusters](#generating-an-inventory-report-for-a-fleet-of-clusters)
+- [Credentials Management using credstore](#credentials-management-using-credstore)
+- [Managing Credentials in Environments without DNS](#managing-credentials-in-environments-without-dns)
+- [Removing a cluster from the Vault](#removing-a-cluster-from-the-vault)
+- [Moving the credential vault to another system](#moving-the-credential-vault-to-another-system)
+- [Unbloat](#unbloat)
+- [Considerations for running python](#considerations-for-running-python)
 
-#### Requirements for Redis Enterprise User Permission
+
+#### Requirements for Redis Enterprise User Permissions
 
 The user credentials provided must have a Management Role of `DB Member` or higher to access the Redis Software API endpoints used by rflat.    
 
@@ -152,7 +163,7 @@ Some examples of supported wild carding.
     *.net 
     *   
 
-##### Bash wild card globing (Linux)
+##### Wild card globing (Linux)
 
 For Linux using the `*` as wildcard character will not work.  On linux the bash shell will expand the wildcard  before the script is invoked and will cause an error.  
 
@@ -166,13 +177,11 @@ You can use a single . to indicate all FQDNs
 
 	./rflat --list . 
 
-Generally using `*` with most wildcard expressions should work. When in doubt use single quotes. 
+You can also put quotes around the FQDN.
 Examples:
 
-	./rflat *.cluster.test
-    ./rflat rl*.net         
-    ./rflat '*.cluster.test'
-    ./rflat 'rl*.net'
+	./rflat '*.cluster.test'
+    ./rflat 'rl*.net'         
 
 You can also disable globing in in the bash shell. 
 
@@ -182,8 +191,11 @@ You can also disable globing in in the bash shell.
 To re-enable globing in the shell. 
 
     $set +o noglob
-	
 
+For zsh you can prepend noglob to the alias definition to disable globbing for the command.
+
+	alias rflat="noglob rflat"
+		
 #### Batch processing Support Packages Downloads
 
 It is easy to use wild cards to download multiple support packages at once.  
@@ -356,7 +368,7 @@ If you do not wish to save the support package to disk, you can use the `--nosav
 
 ----------
 
-### Generating An Inventory Report of all Deployments
+### Generating An Inventory Report for a Fleet of Clusters
 
 rflat can generate an up to date inventory of all clusters deployed.  The inventory report is formatted as a multi-sheet excel workbook with multiple sheets. 
 
@@ -374,24 +386,26 @@ The cluster tab includes a list of all clusters.  A tab is created for each clus
 
 ----------
 
-## credstore Credentials Management
+## Credentials Management using credstore
     
-    usage: credstore [-h] {init,add,get,recover,apikey,reset} ...
-
-	Redis Enterprise Cluster Credentials Encrypted Store
-
-	positional arguments: {init,add,get,recover,apikey,reset}
-
-                        Available commands
-    init                Initialize the vault
-    add                 Add encrypted credentials for a cluster
-    get                 Get Credentials for a cluster
-    recover             Recovery Vault from Secret
-    apikey              Save Upload API Key
-    reset               Delete Vault Secret
-
-	options:
-  	  -h, --help            show this help message and exit
+		 usage: credstore.py [-h] {init,add,get,recover,apikey,reset,list,del} ...
+		
+		Redis Enterprise Cluster Credentials Encrypted Store
+		
+		positional arguments:
+		  {init,add,get,recover,apikey,reset,list,del}
+		                        Available commands
+		    init                Initialize the vault
+		    add                 Add encrypted credentials for a cluster
+		    get                 Get Credentials for a cluster
+		    recover             Recovery Vault from Secret
+		    apikey              Save Upload API Key
+		    reset               Delete Vault Secret
+		    list                List FQDNs in Vault
+		    del                 Delete an FQDN in the Vault
+		
+		options:
+		  -h, --help            show this help message and exit
 
 
 credstore can be used to manage credentials. It implements a password vault to save all databases credentials. The credentials are encrypted using Fernet, a 128 Bit Symmetric Block Cipher. 
@@ -404,8 +418,7 @@ The secret key for the vault is stored in the system key chain which is local. H
 
 If the vault needs to be relocated to another machine, the vault can be moved and reused as by inserting the secret into the key chain of the new system. 
 
-
-#### Managing Credentials with credstore 
+#### Initializing the Credential Vault
 
 The credstore utility is used to manage credentials.  
 
@@ -451,8 +464,9 @@ If the above example, any REST API call for cluster.stark.local will be replaced
 
 #### Removing a cluster from the vault
 
-To remove a cluster from the vault, go the vault folder and delete the file that corresponds with the fqdn you 
-wish to remove.   
+Use the delete command to remove a cluster from the vault
+
+	credstore del --fqdn cluster.stark.local
 
 #### Moving the Credential Vault to another System
 

@@ -102,7 +102,7 @@ def xls(logger, fqdns, resolver, path):
             response = SupportPackage.get_bdb_names(
                 logger, fqdn, resolver.get(fqdn), user, pwd
             )
-            bdb_data = SupportPackage.deserialize_bdb_info(fqdn, response)
+            bdb_data = SupportPackage.deserialize_bdb_info(response)
             generator.create_sheet(fqdn)
             generator.add_data(fqdn, bdb_data)
         except Exception as e:
@@ -121,7 +121,7 @@ def process(logger, fqdn, ip, user, pwd, path, args):
         try:
             response = SupportPackage.get_bdb_names(logger, fqdn, ip, user, pwd)
             if args.json:
-                bdb_info = SupportPackage.deserialize_bdb_info(fqdn, response)
+                bdb_info = SupportPackage.deserialize_bdb_info(response)
                 bdb = {}
                 bdb["cluster"] = fqdn
                 bdb["databases"] = bdb_info
@@ -207,7 +207,7 @@ def process_args_single_fqdn(logger, fqdn, ip, args, path):
 def main():
     '''main function'''
     parser = argparse.ArgumentParser(
-        description="Redis Enterprise Audit Tool Version 0.9.2"
+        description="Redis Enterprise Audit Tool Version 241212"
     )
 
     parser.add_argument(

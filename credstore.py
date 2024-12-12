@@ -2,10 +2,45 @@
 """Redis Enterprise Credential Manager"""
 
 import argparse
+import json
+import re
+import sys
 from lib.credential_vault import CredentialVault
 from lib.key_vault import KeyVault
 from lib.resolver  import Resolver
 
+import os
+
+def list_files_in_folder(folder_path):
+    try:
+        # Get a list of all files in the folder
+        files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+        return files
+    except FileNotFoundError:
+        print(f"Error: The folder '{folder_path}' does not exist.")
+        return []
+    except PermissionError:
+        print(f"Error: Permission denied to access '{folder_path}'.")
+        return []
+
+
+def validate_fqdn(fqdn):
+ 
+    # Ensure the FQDN is not too long
+    if len(fqdn) > 253:
+        return False
+
+    # Regular expression for a valid label in an FQDN
+    label_regex = re.compile(r'^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$')
+
+    # Split the FQDN into labels
+    labels = fqdn.split(".")
+
+    # Each label must match the regex, and the FQDN must have at least two labels
+    if len(labels) < 2 or not all(label_regex.match(label) for label in labels):
+        return False
+
+    return True
 
 def confirmChoice():
     choice = input("Confirm [Y/N] ").lower()
@@ -97,17 +132,28 @@ def main():
     parser_recover.add_argument(
         "--secret", help="Secret key for vault recovery", required=True
     )
-    # Subparser for the 'apikey' command
+    # subparser for the 'apikey' command
     parser_apikey = subparsers.add_parser("apikey", help="Save Upload API Key")
     parser_apikey.add_argument("--key", help="API Key", required=True)
 
-    # subprocess for reset command
+    # subparser for reset command
     parser_recover = subparsers.add_parser("reset", help="Delete Vault Secret")
+
+    # Subparser for list command    
+    parser_list = subparsers.add_parser("list", help="List FQDNs in Vault")
+
+    parser_list = subparsers.add_parser("del", help="Delete an FQDN in the Vault")
+    parser_list.add_argument("--fqdn", help="fdqn to remove")
+
+
     args = parser.parse_args()
 
     if args.command == "init":
-        initialize_vault()
+        initialize_vault()    
     elif args.command == "add":
+        if not validate_fqdn(args.fqdn):
+            print("Invalid fqdn format")
+            sys.exit(-1)
         add_credentials(args.fqdn, args.user, args.pwd)
         if args.ip:
             resolver = Resolver()
@@ -127,6 +173,21 @@ def main():
     elif args.command == "apikey":
         update_api_key(args.key)
         print("API Key Saved")
+    elif args.command == "list":
+        fqdn_list = []
+        for fqdn in list_files_in_folder("vault"):            
+            if (validate_fqdn(fqdn)):
+                fqdn_list.append(fqdn)
+        print(json.dumps(fqdn_list,indent=3))
+    elif args.command == "del":
+        print(f"Delete ({args.fqdn})")
+        confirmChoice()
+        fname = f"vault/{args.fqdn}"
+        if os.path.exists(fname):
+            print(f"deleting entry({args.fqdn})")
+            os.remove(fname)
+        else:
+            print(f"no matching fqdn")
     else:
         parser.print_help()
 
