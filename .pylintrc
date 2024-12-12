@@ -1,2 +1,10 @@
 [MESSAGES CONTROL]
-disable=broad-exception-raised,broad-exception-caught
+disable=broad-exception-raised,
+broad-exception-caught,
+line-too-long,
+inconsistent-return-statements,
+too-many-arguments,
+too-many-locals,
+too-many-branches,
+no-member,
+missing-function-docstring

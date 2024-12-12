@@ -1,0 +1,5 @@
+cryptography==44.0.0
+Files.com==1.4.194
+keyring==25.5.0
+openpyxl==3.1.5
+Requests==2.32.3

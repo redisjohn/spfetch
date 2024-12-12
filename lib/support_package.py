@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 import requests
 from .tar_processor import TarProcessor
-from .logger import Logger
 from .files_uploader import FilesUploader
 
 
@@ -95,12 +94,13 @@ class SupportPackage:
         print('-' * (uid_width + name_width + version_width + shards_width + 6))
 
         for bdb in bdb_names:
-            if (bdb['slave_ha']):
+            if bdb['slave_ha']:
                 bdb['shards_count'] *= 2
             print(f"{str(bdb['uid']).ljust(uid_width)}  {str(bdb['name']).ljust(name_width)} {str(bdb['version']).ljust(version_width)} {str(bdb['shards_count']).rjust(shards_width)}")
 
-    def deserialize_bdb_info(fqdn, response):
-        """deseriazie bdb info"""
+    @staticmethod
+    def deserialize_bdb_info(response):
+        """deserialize bdb info"""
         bdbs = []
         bdb_json = sorted(json.loads(response), key=lambda x: (x['uid']))
 
@@ -122,7 +122,9 @@ class SupportPackage:
             rec['CRDB'] = bdb['crdt']
             rec['Modules'] = ''
             for module in bdb['module_list']:
-                rec['modules'] += (module + ' ')
+                # print(module)
+                rec['Modules'] += module['module_name'] + \
+                    ' ' + module['semantic_version'] + ';'
             rec['TLS'] = bdb['ssl']
             rec['OSS Cluster API'] = bdb['oss_cluster']
             rec['Proxy Policy'] = bdb['proxy_policy']
@@ -152,7 +154,7 @@ class SupportPackage:
         except requests.exceptions.ConnectionError as e:
             logger.exception(e, f"({fqdn}):Connection Error Occured")
         except requests.exceptions.HTTPError as e:
-            if (response.status_code == 401):
+            if response.status_code == 401:
                 logger.exception(
                     e, f"({fqdn}):{response.status_code}:Invalid Credentials")
             else:
@@ -196,8 +198,8 @@ class SupportPackage:
                          reduce_tar_size, save_to_file=True, upload=True, dry_run=False):
         """Download suppport package"""
         try:
-            output_bytes = []
             requests.packages.urllib3.disable_warnings()
+            output_bytes = []
             host = fqdn if (ip is None) else ip
             if db != 0:
                 logger.info(f"Database:{db}")
@@ -228,7 +230,8 @@ class SupportPackage:
                 logger.info(f"({fqdn}):Reducing Package Size")
                 if not dry_run:
                     tar_processor_bytes = TarProcessor()
-                    savings, original_size, new_size, output_bytes = tar_processor_bytes.process_from_bytes(response.content)
+                    savings, original_size, new_size, output_bytes = tar_processor_bytes.process_from_bytes(
+                        response.content)
                     logger.info(
                         f"({fqdn}):Original tar size: {original_size}MB")
                     logger.info(f"({fqdn}):New tar size: {new_size}MB")
