@@ -3,6 +3,9 @@ credstore
 rflat
 unbloat
 
+#Ignore resolver.json
+resolver.json 
+
 # Ignore Folders Created
 output/
 vault/
