@@ -624,7 +624,42 @@ To locate versions of python:
  whereis python3
  ```
 
-This can be modified if your python executable is not in /usr/bin.   However you can also invoke the python interpreter directly to execute any of the scripts.
+
+=======
+##### Mac OS Python installation Options
+
+The system python on recent versions of Mac OS is `/usr/bin/python3` version `3.9.6` which is installed via
+the XCode command line tools installation. If this version isn't available on your machine, you have several options in
+order of simplicity:
+
+- Install via Homebrew
+
+```sh
+# if you don't have brew installed yet ...
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+
+# then
+brew install python3
+```
+
+- Install [XCode](https://developer.apple.com/xcode/) and then install the command line tools with `xcode-select --install`
+
+- Install [pyenv](https://github.com/pyenv/pyenv) so you can manage multiple python versions.
+
+Regardless of the option you choose, it's typically recommended to use a virtual environment. Run the following
+to create an environment for `rflat`:
+
+```sh
+python3 -m venv .rflat-venv
+source .rflat-venv/bin/activate
+```
+
+Some resources for further reading:
+
+- Creating Virtual Environments: <https://docs.python.org/3/tutorial/venv.html#tut-venv>
+- Homebrew: <https://brew.sh/>
+- Installing Python 3 on Mac OS: <https://docs.python-guide.org/starting/install3/osx/>
+
 
 ```sh
  python3 rflat -h 

@@ -4,9 +4,9 @@
 import argparse
 import os
 from pathlib import Path
-from lib.TarProcessor import TarProcessor
-from lib.FilesUploader import FilesUploader
-from lib.Logger import Logger
+from lib.tar_processor import TarProcessor
+from lib.files_uploader import FilesUploader
+from lib.logger import Logger
 
 logger = Logger(
     name="MyLogger", facility="unbloat", log_to_file=False, filename="logs/app"
