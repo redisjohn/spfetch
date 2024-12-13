@@ -205,7 +205,7 @@ You can enclose the wild card in single quotes
 
 ```sh
     ./rflat --list '*'  
-    ```
+```
 
 You can use a single . to indicate all FQDNs
 
@@ -245,30 +245,30 @@ alias rflat="noglob rflat"
 It is easy to use wild cards to download multiple support packages at once.  
 
 ```sh
-    ./rflat *.ixaac.net   
-    2024-10-28 11:53:54,rflat,INFO,(rlec1.ixaac.net):Agressively Optimizing Support Package Size
-    2024-10-28 11:53:54,rflat,INFO,(rlec1.ixaac.net):Starting Download
-    2024-10-28 11:55:09,rflat,INFO,(rlec1.ixaac.net):Reducing Package Size
-    2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):Original tar size: 214159442 bytes
-    2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):New tar size: 2041851 bytes
-    2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):Storage savings: 212117591 bytes
-    2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):Support package downloaded successfully.
-    2024-10-28 11:55:22,rflat,INFO,Purging Old Version:(output\debuginfo.rlec1.ixaac.net_20241028111754.tar.gz)
-    2024-10-28 11:55:22,rflat,INFO,(rlec2.ixaac.net):Agressively Optimizing Support Package Size
-    2024-10-28 11:55:22,rflat,INFO,(rlec2.ixaac.net):Starting Download
-    2024-10-28 11:56:37,rflat,INFO,(rlec2.ixaac.net):Reducing Package Size
-    2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):Original tar size: 214176922 bytes
-    2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):New tar size: 2043745 bytes
-    2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):Storage savings: 212133177 bytes
-    2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):Support package downloaded successfully.
-    2024-10-28 11:56:50,rflat,INFO,Purging Old Version:(output\debuginfo.rlec2.ixaac.net_20241028111922.tar.gz)
- 2024-10-28 11:56:50,rflat,INFO,(rlec3.ixaac.net):Starting Download
- 2024-10-28 11:58:04,rflat,INFO,(rlec3.ixaac.net):Reducing Package Size
- 2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):Original tar size: 214189015 bytes
- 2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):New tar size: 2044389 bytes
- 2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):Storage savings: 212144626 bytes
- 2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):Support package downloaded successfully.
- 2024-10-28 11:58:18,rflat,INFO,Purging Old Version:(output\debuginfo.rlec3.ixaac.net_20241028112621.tar.gz)    
+  ./rflat *.ixaac.net   
+  2024-10-28 11:53:54,rflat,INFO,(rlec1.ixaac.net):Agressively Optimizing Support Package Size
+  2024-10-28 11:53:54,rflat,INFO,(rlec1.ixaac.net):Starting Download
+  2024-10-28 11:55:09,rflat,INFO,(rlec1.ixaac.net):Reducing Package Size
+  2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):Original tar size: 214159442 bytes
+  2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):New tar size: 2041851 bytes
+  2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):Storage savings: 212117591 bytes
+  2024-10-28 11:55:22,rflat,INFO,(rlec1.ixaac.net):Support package downloaded successfully.
+  2024-10-28 11:55:22,rflat,INFO,Purging Old Version:(output\debuginfo.rlec1.ixaac.net_20241028111754.tar.gz)
+  2024-10-28 11:55:22,rflat,INFO,(rlec2.ixaac.net):Agressively Optimizing Support Package Size
+  2024-10-28 11:55:22,rflat,INFO,(rlec2.ixaac.net):Starting Download
+  2024-10-28 11:56:37,rflat,INFO,(rlec2.ixaac.net):Reducing Package Size
+  2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):Original tar size: 214176922 bytes
+  2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):New tar size: 2043745 bytes
+  2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):Storage savings: 212133177 bytes
+  2024-10-28 11:56:50,rflat,INFO,(rlec2.ixaac.net):Support package downloaded successfully.
+  2024-10-28 11:56:50,rflat,INFO,Purging Old Version:(output\debuginfo.rlec2.ixaac.net_20241028111922.tar.gz)
+  2024-10-28 11:56:50,rflat,INFO,(rlec3.ixaac.net):Starting Download
+  2024-10-28 11:58:04,rflat,INFO,(rlec3.ixaac.net):Reducing Package Size
+  2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):Original tar size: 214189015 bytes
+  2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):New tar size: 2044389 bytes
+  2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):Storage savings: 212144626 bytes
+  2024-10-28 11:58:18,rflat,INFO,(rlec3.ixaac.net):Support package downloaded successfully.
+  2024-10-28 11:58:18,rflat,INFO,Purging Old Versio(output\debuginfo.rlec3.ixaac.net_20241028112621.tar.gz)    
  ```
 
 #### Pulling a Support Package for a Single Database
@@ -277,13 +277,13 @@ You can use the --db flag to pull a support package for a single database.  This
 
 ```sh
  ./rflat --db 1  cluster.redis.test 
- ```
+```
 
 You can get a list of database ids using the following command:
 
 ```sh
  ./rflat --list cluster.redis.test
- ```
+```
 
 #### Optimization of support package size
 
@@ -302,9 +302,9 @@ rflat by default will store all output generated in the `output`folder under the
 rflat will remove all old versions of a support packages by default each time is generates an updated copy.  You can override the number of old version using the `--keep` flag.   For inventory reports, the default value is 5.
 
 ```sh
-    ./rflat rlec4.ixaac.net --keep 3
-    ./rflat --xls * --keep 2 
-    ```
+  ./rflat rlec4.ixaac.net --keep 3
+  ./rflat --xls * --keep 2 
+```
 
     
 #### Auditing Deployments
@@ -347,13 +347,13 @@ The license command provides a quick list of license information for one or more
     "ram_shards": 0,
     "flash_shards": 10
     }
-    ```
+  ```
 
 #### Getting database inventory for a cluster
 
 To get a quick summary of databases in a cluster.  (You can also use wild cards with this command for any clusters with credentials stored in the vault)
 
-```sh
+  ```sh
     ./rflat --list cluster.redis.test
 
  cluster.redis.test
@@ -361,7 +361,7 @@ To get a quick summary of databases in a cluster.  (You can also use wild cards 
  --------------------------
  1    test    7.2.3     2
  2    test2   7.2.3     1
-    ```
+  ```
     
 
 To get a more detailed summary using the --json flag
@@ -428,8 +428,8 @@ To upload a support package you can use the `--upload` flag.
 If you do not wish to save the support package to disk, you can use the `--nosave` flag.
 
 ```sh
-      ./rflat --db 1 --upload --nosave cluster.redis.test     
-      ```
+    ./rflat --db 1 --upload --nosave cluster.redis.test     
+  ```
 
 ----------
 
@@ -440,7 +440,7 @@ rflat can generate an up to date inventory of all clusters deployed.  The invent
 The cluster tab includes a list of all clusters.  A tab is created for each cluster showing detailed information including version numbers of database and modules along with other key settings.
 
 ```sh
-    ./rflat --xls *
+  ./rflat --xls *
  2024-10-28 12:26:32,rflat,INFO,Processing Data for:(cluster.redis.test)
  2024-10-28 12:26:32,rflat,INFO,Processing Data for:(rlec1.ixaac.net)
  2024-10-28 12:26:32,rflat,INFO,Processing Data for:(rlec2.ixaac.net)
@@ -617,13 +617,6 @@ For Linux and MacOs, the install.sh script will configure symbolic links to name
   ./rflat -h 
   ```
 
-Each utility start with the following line:
-
-```python
- #!/usr/bin/python3
- ```
-
-This is used to associate the file type.  Run the ./install.sh script to set permission bits and make symbolic links.
 
 To locate versions of python:
 
