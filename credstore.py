@@ -158,7 +158,7 @@ def main():
         if args.ip:
             resolver = Resolver()
             resolver.load()
-            resolver.saveHost(args.fqdn, args.ip)
+            resolver.save_host(args.fqdn, args.ip)
             resolver.persist()
     elif args.command == "get":
         get_credentials(args.fqdn)
