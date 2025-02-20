@@ -2,7 +2,7 @@
 
 ----------
 
-rflat is a utility for quickly downloading Redis Enterprise support packages and provide audit reporting for a fleet of  Redis Enterprise Clusters.
+rflat is a utility for quickly downloading Redis Enterprise support packages and providing audit reporting for a fleet of  Redis Enterprise Clusters.
 
 rflat accesses a Redis Enterprise Cluster using the Redis Enterprise Software API.  This requires a valid Redis Enterprise user and password for each cluster to be used.  This can be supplied explicitly on the command line but using the credential vault is recommended.  
 
@@ -113,6 +113,9 @@ git clone https://github.com/redisjohn/spfetch
       - [Optimization of support package size](#optimization-of-support-package-size)
       - [Overriding support package download location](#overriding-support-package-download-location)
       - [Purging old files](#purging-old-files)
+      - [Auditing Deployments](#auditing-deployments)
+      - [Getting database inventory for a cluster](#getting-database-inventory-for-a-cluster)
+      - [Generating An Inventory Report for a Fleet of Clusters](#generating-an-inventory-report-for-a-fleet-of-clusters)
     - [Uploading Support Packages to Redis](#uploading-support-packages-to-redis)
   - [Credentials Management using credstore](#credentials-management-using-credstore)
       - [Initializing the Credential Vault](#initializing-the-credential-vault)
@@ -437,7 +440,7 @@ If you do not wish to save the support package to disk, you can use the `--nosav
 
 rflat can generate an up to date inventory of all clusters deployed.  The inventory report is formatted as a multi-sheet excel workbook with multiple sheets.
 
-The cluster tab includes a list of all clusters.  A tab is created for each cluster showing detailed information including version numbers of database and modules along with other key settings.
+The cluster tab includes a list of all clusters.  A tab is created for each cluster showing detailed licensing information, version information and other settings.
 
 ```sh
   ./rflat --xls *
