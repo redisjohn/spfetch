@@ -20,7 +20,7 @@ class ExcelReportGenerator:
         self.workbook = Workbook()
         # print("New workbook created.")
 
-    def create_sheet(self, sheet_name):
+    def create_sheet(self, sheet_name,tab_color=None):
         """
         Create a new sheet in the workbook.
 
@@ -35,7 +35,8 @@ class ExcelReportGenerator:
         if len(self.workbook.sheetnames) == 1 and self.workbook.active.title == "Sheet":
             self.workbook.remove(self.workbook.active)
 
-        self.workbook.create_sheet(title=sheet_name)
+        ws = self.workbook.create_sheet(title=sheet_name)
+        ws.sheet_properties.tabColor = tab_color
         # print(f"Sheet '{sheet_name}' created.")
 
     def add_data(self, sheet_name, data):

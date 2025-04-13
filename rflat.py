@@ -49,13 +49,23 @@ def get_fname(path):
 def xls(logger, fqdns, resolver, path):
     """Generate xls file for inventory"""
     clusters = []
+    certificates = []
+    roles = []
+    acls = []
+    permissions = []
+    nodes = []
 
     # Create a new instance of the generator
     generator = ExcelReportGenerator()
 
     # Create a new workbook and add data
     generator.create_workbook()
-    generator.create_sheet("Clusters")
+    generator.create_sheet("Clusters",tab_color="55585c")
+    generator.create_sheet("Nodes",tab_color="55585c")
+    generator.create_sheet("Certificates",tab_color="591523")
+    generator.create_sheet("Roles",tab_color="591523")
+    generator.create_sheet("Acls",tab_color="591523")
+    generator.create_sheet("Permissions",tab_color="591523")
 
     for fqdn in fqdns:
         try:
@@ -67,23 +77,29 @@ def xls(logger, fqdns, resolver, path):
             response = SupportPackage.get_license_info(
                 fqdn, resolver.get(fqdn), user, pwd
             )
-            # license = SupportPackage.deserialize_license_info(fqdn,response)
             redis_license = json.loads(response)
 
-            response = SupportPackage.get_nodes(
-                logger, fqdn, resolver.get(fqdn), user, pwd
-            )
-            nodeinfo = SupportPackage.summarize_node_info(response)
+
+            fqdn_roles, fqdn_acls, fqdn_permissions = SupportPackage.get_roles_acls(fqdn,resolver.get(fqdn),user,pwd)
+            roles.extend(fqdn_roles)
+            acls.extend(fqdn_acls)
+            permissions.extend(fqdn_permissions)
+        
+            fqdn_certificates = SupportPackage.get_certificate_info(fqdn,resolver.get(fqdn),user,pwd)
+            certificates.extend(fqdn_certificates)
+
+            nodeinfo = SupportPackage.summarize_node_info(fqdn, resolver.get(fqdn), user, pwd)
 
             cluster = {}
-            cluster["name"] = fqdn
+            cluster["fqdn"] = fqdn
+            cluster["cluster_name"] = redis_license['cluster_name']
+            cluster["license_owner"] = redis_license['owner']
             cluster["version"] = nodeinfo["version"]
             cluster["os"] = nodeinfo["os"]
 
             cluster["features"] = ""
             for feature in redis_license["features"]:
                 cluster["features"] += feature + " "
-            clusters.append(cluster)
 
             cluster["activated"] = SupportPackage.convert_zulu_string(
                 redis_license["activation_date"]
@@ -97,29 +113,37 @@ def xls(logger, fqdns, resolver, path):
             cluster["rof_shards"] = redis_license["flash_shards_in_use"]
             cluster["nodes"] = nodeinfo["nodes"]
             cluster["version_mismatch"] = nodeinfo["mismatch"]
+            clusters.append(cluster)
 
-            # create sheet for fqdn
-            response = SupportPackage.get_bdb_names(
-                logger, fqdn, resolver.get(fqdn), user, pwd
-            )
+            fqdn_nodes = SupportPackage.get_nodes(fqdn,resolver.get(fqdn),user,pwd)
+            nodes.extend(fqdn_nodes)
+
+            # create sheet for each database
+            response = SupportPackage.get_bdb_names(fqdn, resolver.get(fqdn), user, pwd)
             bdb_data = SupportPackage.deserialize_bdb_info(response)
-            generator.create_sheet(fqdn)
+            generator.create_sheet(fqdn,tab_color="154859")
             generator.add_data(fqdn, bdb_data)
+    
         except Exception as e:
             logger.exception(e, f"Error during Request for {fqdn}")
 
     # add licenses to cluster worksheet
     generator.add_data("Clusters", clusters)
+    generator.add_data("Nodes", nodes)
+    generator.add_data("Certificates",certificates)
+    generator.add_data("Roles",roles)
+    generator.add_data("Acls",acls)
+    generator.add_data("Permissions",permissions)
+    
     # save the workbook
     file_name = generator.save_workbook(get_fname(path))
     logger.info(f"Workbook saved as '{file_name}'.")
-
 
 def process(logger, fqdn, ip, user, pwd, path, args):
     '''process a command'''
     if args.list:
         try:
-            response = SupportPackage.get_bdb_names(logger, fqdn, ip, user, pwd)
+            response = SupportPackage.get_bdb_names(fqdn, ip, user, pwd)
             if args.json:
                 bdb_info = SupportPackage.deserialize_bdb_info(response)
                 bdb = {}
@@ -173,11 +197,9 @@ def process(logger, fqdn, ip, user, pwd, path, args):
             logger.exception(e, f"({fqdn}):Fatal Error")
     return
 
-
 #
 # Process command arguments for specified fqdn
 #
-
 
 def process_args_single_fqdn(logger, fqdn, ip, args, path):
     '''process command for single fqdn'''
@@ -206,6 +228,7 @@ def process_args_single_fqdn(logger, fqdn, ip, args, path):
 
 def main():
     '''main function'''
+
     parser = argparse.ArgumentParser(
         description="Redis Enterprise Audit Tool Version 241212"
     )
