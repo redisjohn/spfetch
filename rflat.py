@@ -77,25 +77,28 @@ def xls(logger, fqdns, resolver, path):
     for fqdn in fqdns:
         try:
             user, pwd = CredentialVault.decrypt_credentials(fqdn)
-
+            ip = resolver.get(fqdn)
             # get license and node info for cluster sheet
             logger.info(f"Processing Data for:({fqdn})")
 
-            response = SupportPackage.get_license_info(
-                fqdn, resolver.get(fqdn), user, pwd
-            )
+            response = SupportPackage.get_license_info(fqdn,ip, user, pwd)
             redis_license = json.loads(response)
 
+            cluster_data = SupportPackage.get_cluster_info(fqdn,ip, user,pwd)
+            cluster_json = json.loads(cluster_data)
+            
+            bdb_data = SupportPackage.get_bdbs(fqdn,ip,user,pwd)
+            bdb_json = json.loads(bdb_data)
 
-            fqdn_roles, fqdn_acls, fqdn_permissions = SupportPackage.get_roles_acls(fqdn,resolver.get(fqdn),user,pwd)
+            fqdn_roles, fqdn_acls, fqdn_permissions = SupportPackage.get_roles_acls(bdb_json,fqdn,ip,user,pwd)
             roles.extend(fqdn_roles)
             acls.extend(fqdn_acls)
             permissions.extend(fqdn_permissions)
         
-            fqdn_certificates = SupportPackage.get_certificate_info(fqdn,resolver.get(fqdn),user,pwd)
+            fqdn_certificates = SupportPackage.get_certificate_info(fqdn,bdb_json,cluster_json)
             certificates.extend(fqdn_certificates)
 
-            nodeinfo = SupportPackage.summarize_node_info(fqdn, resolver.get(fqdn), user, pwd)
+            nodeinfo = SupportPackage.summarize_node_info(fqdn,ip, user, pwd)
 
             cluster = {}
             cluster["fqdn"] = fqdn
@@ -103,7 +106,7 @@ def xls(logger, fqdns, resolver, path):
             cluster["license_owner"] = redis_license['owner']
             cluster["version"] = nodeinfo["version"]
             cluster["os"] = nodeinfo["os"]
-
+            cluster["rack aware"]=cluster_json["rack_aware"]
             cluster["features"] = ""
             for feature in redis_license["features"]:
                 cluster["features"] += feature + " "
@@ -122,15 +125,16 @@ def xls(logger, fqdns, resolver, path):
             cluster["version_mismatch"] = nodeinfo["mismatch"]
             clusters.append(cluster)
 
-            fqdn_nodes = SupportPackage.get_nodes(fqdn,resolver.get(fqdn),user,pwd)
-            nodes.extend(fqdn_nodes)
+            fqdn_nodes = SupportPackage.get_nodes(fqdn,ip,user,pwd)
+            nodes.extend(fqdn_nodes)   
 
-            response = SupportPackage.get_bdb_names(fqdn, resolver.get(fqdn), user, pwd)
-            bdb_data = SupportPackage.deserialize_bdb_info(fqdn,response)
+            fqdn_shards = SupportPackage.get_shard_info(bdb_json,fqdn,ip,user,pwd)            
+            shards.extend(fqdn_shards)
+
+            bdb_data = SupportPackage.deserialize_bdb_info(fqdn,bdb_json)
             databases.extend(bdb_data)
             
-            cluster = SupportPackage.get_cluster_info(fqdn, resolver.get(fqdn), user,pwd)
-            fqdn_ciphers = SupportPackage.get_ciphers(fqdn,json.loads(cluster))            
+            fqdn_ciphers = SupportPackage.get_ciphers(fqdn,cluster_json)            
             ciphers.extend(fqdn_ciphers)
 
     
@@ -140,6 +144,7 @@ def xls(logger, fqdns, resolver, path):
     # add licenses to cluster worksheet
     generator.add_data("Clusters", clusters)
     generator.add_data("Nodes", nodes)
+    generator.add_data("Shards",shards)
     generator.add_data("Certificates",certificates)
     generator.add_data("Ciphers",ciphers)
     generator.add_data("Roles",roles)
@@ -155,15 +160,16 @@ def process(logger, fqdn, ip, user, pwd, path, args):
     '''process a command'''
     if args.list:
         try:
-            response = SupportPackage.get_bdb_names(fqdn, ip, user, pwd)
+            bdb_data = SupportPackage.get_bdbs(fqdn, ip, user, pwd)
+            bdb_json = json.loads(bdb_data)
             if args.json:
-                bdb_info = SupportPackage.deserialize_bdb_info(fqdn,response)
+                bdb_info = SupportPackage.deserialize_bdb_info(fqdn,bdb_json)
                 bdb = {}
                 bdb["cluster"] = fqdn
                 bdb["databases"] = bdb_info
                 print(json.dumps(bdb, indent=4))
             else:
-                SupportPackage.tablulate_bdb_info(fqdn, response)
+                SupportPackage.tablulate_bdb_info(fqdn, bdb_json)
         except Exception as e:
             logger.exception(e, "Error Processing Command")
     elif args.license:

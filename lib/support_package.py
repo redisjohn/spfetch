@@ -141,10 +141,9 @@ class SupportPackage:
             print(f"{str(bdb['uid']).ljust(uid_width)}  {str(bdb['name']).ljust(name_width)} {str(bdb['version']).ljust(version_width)} {str(bdb['shards_count']).rjust(shards_width)}")
 
     @staticmethod
-    def deserialize_bdb_info(fqdn,response):
+    def deserialize_bdb_info(fqdn,bdb_json):
         """deserialize bdb info"""
         bdbs = []
-        bdb_json = sorted(json.loads(response), key=lambda x: (x['uid']))
 
         for bdb in bdb_json:
             rec = {}
@@ -182,10 +181,10 @@ class SupportPackage:
                 else:
                     rec['Internal Endpoint'] = nameport
             bdbs.append(rec)
-        return bdbs
+        return sorted(bdbs, key=lambda x:(x['fqdn'], x['Id']))
 
     @staticmethod
-    def get_bdb_names(fqdn, ip, username, password):
+    def get_bdbs(fqdn, ip, username, password):
         """get bdb names"""
         response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/bdbs")
         return response.text
@@ -218,42 +217,60 @@ class SupportPackage:
         return response.text
 
     @staticmethod
-    def get_ciphers(fqdn,cluster):
+    def get_shard_info(bdb_json,fqdn,ip,username,password):
+        response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/shards")        
+        shard_json = json.loads(response.text)
+        shards = []
+        for item in shard_json:
+            shard={}
+            shard['fqdn'] = fqdn 
+            shard['database id'] = item['bdb_uid']
+            shard['node id']=item['node_uid']
+            shard['database name']=next((i["name"] for i in bdb_json if i["uid"]==item["bdb_uid"]))
+            shard['id']=item['uid']
+            shard['role']=item['role']
+            shard['slots']=item['assigned_slots']
+            shards.append(shard)
+        return shards               
+
+    @staticmethod
+    def get_ciphers(fqdn,cluster_json):
         ciphers = []        
-        if cluster['control_cipher_suites']:
+        if cluster_json['control_cipher_suites']:
             cipher = {}
             cipher['fqdn'] = fqdn
             cipher['type'] = 'control plane'
-            cipher['ciphers'] = cluster['control_cipher_suites']
+            cipher['ciphers'] = cluster_json['control_cipher_suites']
             ciphers.append(cipher)
-        if cluster['control_cipher_suites_tls_1_3']:
+        if cluster_json['control_cipher_suites_tls_1_3']:
             cipher = {}
             cipher['fqdn'] = fqdn
             cipher['type'] = 'control plane TLS 1.3'
-            cipher['ciphers'] = cluster['control_cipher_suites_tls_1_3']
+            cipher['ciphers'] = cluster_json['control_cipher_suites_tls_1_3']
             ciphers.append(cipher)
-        if cluster['data_cipher_list']:
+        if cluster_json['data_cipher_list']:
             cipher = {}
             cipher['fqdn'] = fqdn
             cipher['type'] = 'data plane ciphers'
-            cipher['ciphers'] = cluster['data_cipher_list']
+            cipher['ciphers'] = cluster_json['data_cipher_list']
             ciphers.append(cipher)
-        if cluster['data_cipher_suites_tls_1_3']:
+        if cluster_json['data_cipher_suites_tls_1_3']:
             cipher = {}
             cipher['fqdn'] = fqdn
             cipher['type'] = 'data plane ciphers TLS 1.3'
-            cipher['ciphers'] = cluster['data_cipher_suites_tls_1_3']
+            cipher['ciphers'] = cluster_json['data_cipher_suites_tls_1_3']
             ciphers.append(cipher)
-        if cluster['sentinel_cipher_suites']:
+        if cluster_json['sentinel_cipher_suites']:
             cipher = {}
             cipher['fqdn'] = fqdn
             cipher['type'] = 'sentinel ciphers'
-            cipher['ciphers'] = cluster['sentinel_cipher_suites']
+            cipher['ciphers'] = cluster_json['sentinel_cipher_suites']
             ciphers.append(cipher)
-        if cluster['sentinel_cipher_suites_tls_1_3']:
+        if cluster_json['sentinel_cipher_suites_tls_1_3']:
+            cipher = {}
             cipher['fqdn'] = fqdn
             cipher['type'] = 'sentinel ciphers TLS 1.3'
-            cipher['ciphers'] = cluster['sentinel_cipher_suites_tls_1_3']
+            cipher['ciphers'] = cluster_json['sentinel_cipher_suites_tls_1_3']
             ciphers.append(cipher)
         return ciphers
 
@@ -320,11 +337,10 @@ class SupportPackage:
             logger.exception(e, f"({fqdn}):Error downloading support package")
 
     @staticmethod
-    def deserialize_certificates(fqdn,serialized_json):
-        outputs = []
-        redis_certs = json.loads(serialized_json)
-        for certname, pem in redis_certs.items():
-            if 'cert' in certname:                            
+    def deserialize_certificates(fqdn,cluster_json):
+        outputs = []   
+        for certname, pem in cluster_json.items():
+            if 'cert' in certname and isinstance(cluster_json[certname],str):
                 inspector = CertificateInspector(pem)
                 output = {}
                 output["fqdn"] = fqdn
@@ -333,13 +349,11 @@ class SupportPackage:
                 output["expiration"] = inspector.get_expiration_date().strftime("%Y-%m-%d %H:%M:%S")
                 output["subject"] = str(inspector.get_subject())
                 output["issuer"] = str(inspector.get_issuer())
-                outputs.append(output)
+                outputs.append(output)       
         return outputs    
 
     @staticmethod
-    def get_bdb_certs(fqdn,ip,username,password):
-        response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/bdbs")
-        bdbs = json.loads(response.text)
+    def get_bdb_certs(fqdn,bdbs):
         bdb_certs = []
         for bdb in bdbs:
             for cert in bdb["authentication_ssl_client_certs"]:
@@ -355,19 +369,17 @@ class SupportPackage:
         return bdb_certs        
 
     @staticmethod
-    def get_certificate_info(fqdn, ip, username, password):
-        certificates = []
-        response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/cluster/certificates")
-        certs = SupportPackage.deserialize_certificates(fqdn,response.text)
+    def get_certificate_info(fqdn,bdb_json,cluster_json):
+        certificates = []       
+        certs = SupportPackage.deserialize_certificates(fqdn,cluster_json)
         for cert in certs:
-            certificates.append(cert)        
-        bdb_certs = SupportPackage.get_bdb_certs(fqdn,ip,username,password)
+            certificates.append(cert)       
+        bdb_certs = SupportPackage.get_bdb_certs(fqdn,bdb_json)
         certificates.extend(bdb_certs)
-
         return sorted(certificates, key=lambda x:(x['fqdn'], x['source'], x['cert']))
    
     @staticmethod
-    def get_roles_acls(fqdn, ip, username, password):
+    def get_roles_acls(bdb_json,fqdn, ip, username, password):
         response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/roles")        
         data = json.loads(response.text)
         
@@ -392,10 +404,8 @@ class SupportPackage:
             acl["acl"]=item["acl"]
             acls.append(acl)
 
-        response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/bdbs")
-        data = json.loads(response.text)
         roles_permissions = []
-        for bdb in data:
+        for bdb in bdb_json:
             rules = bdb["roles_permissions"]
             for rule in rules:
                 role_permission = {}
