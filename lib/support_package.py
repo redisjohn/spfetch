@@ -225,13 +225,13 @@ class SupportPackage:
             shard={}
             shard['fqdn'] = fqdn 
             shard['database id'] = item['bdb_uid']
-            shard['node id']=item['node_uid']
+            shard['node id']=int(item['node_uid'])
             shard['database name']=next((i["name"] for i in bdb_json if i["uid"]==item["bdb_uid"]))
-            shard['id']=item['uid']
+            shard['id']=int(item['uid'])
             shard['role']=item['role']
             shard['slots']=item['assigned_slots']
             shards.append(shard)
-        return shards               
+        return sorted(shards, key=lambda x: (x["database id"], x["id"]))               
 
     @staticmethod
     def get_ciphers(fqdn,cluster_json):
