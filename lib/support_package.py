@@ -141,13 +141,14 @@ class SupportPackage:
             print(f"{str(bdb['uid']).ljust(uid_width)}  {str(bdb['name']).ljust(name_width)} {str(bdb['version']).ljust(version_width)} {str(bdb['shards_count']).rjust(shards_width)}")
 
     @staticmethod
-    def deserialize_bdb_info(response):
+    def deserialize_bdb_info(fqdn,response):
         """deserialize bdb info"""
         bdbs = []
         bdb_json = sorted(json.loads(response), key=lambda x: (x['uid']))
 
         for bdb in bdb_json:
             rec = {}
+            rec['fqdn'] = fqdn
             rec['Id'] = bdb['uid']
             rec['Name'] = bdb['name']
             rec['Version'] = bdb['version']

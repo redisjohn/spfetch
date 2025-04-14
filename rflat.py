@@ -54,6 +54,7 @@ def xls(logger, fqdns, resolver, path):
     acls = []
     permissions = []
     nodes = []
+    databases = []
 
     # Create a new instance of the generator
     generator = ExcelReportGenerator()
@@ -66,7 +67,7 @@ def xls(logger, fqdns, resolver, path):
     generator.create_sheet("Roles",tab_color="591523")
     generator.create_sheet("Acls",tab_color="591523")
     generator.create_sheet("Permissions",tab_color="591523")
-
+    generator.create_sheet("Databases",tab_color="154859")
     for fqdn in fqdns:
         try:
             user, pwd = CredentialVault.decrypt_credentials(fqdn)
@@ -120,9 +121,11 @@ def xls(logger, fqdns, resolver, path):
 
             # create sheet for each database
             response = SupportPackage.get_bdb_names(fqdn, resolver.get(fqdn), user, pwd)
-            bdb_data = SupportPackage.deserialize_bdb_info(response)
-            generator.create_sheet(fqdn,tab_color="154859")
-            generator.add_data(fqdn, bdb_data)
+            bdb_data = SupportPackage.deserialize_bdb_info(fqdn,response)
+            databases.extend(bdb_data)
+            #generator.create_sheet(fqdn,tab_color="154859")
+            #generator.add_data(fqdn, bdb_data)
+
     
         except Exception as e:
             logger.exception(e, f"Error during Request for {fqdn}")
@@ -134,6 +137,7 @@ def xls(logger, fqdns, resolver, path):
     generator.add_data("Roles",roles)
     generator.add_data("Acls",acls)
     generator.add_data("Permissions",permissions)
+    generator.add_data("Databases",databases)
     
     # save the workbook
     file_name = generator.save_workbook(get_fname(path))
@@ -145,7 +149,7 @@ def process(logger, fqdn, ip, user, pwd, path, args):
         try:
             response = SupportPackage.get_bdb_names(fqdn, ip, user, pwd)
             if args.json:
-                bdb_info = SupportPackage.deserialize_bdb_info(response)
+                bdb_info = SupportPackage.deserialize_bdb_info(fqdn,response)
                 bdb = {}
                 bdb["cluster"] = fqdn
                 bdb["databases"] = bdb_info
