@@ -274,14 +274,15 @@ class SupportPackage:
             logger.exception(e, f"({fqdn}):Error downloading support package")
 
     @staticmethod
-    def deserialize_certificates(fqdn,response):
+    def deserialize_certificates(fqdn,serialized_json):
         outputs = []
-        redis_certs = json.loads(response.text)
+        redis_certs = json.loads(serialized_json)
         for certname, pem in redis_certs.items():
             if 'cert' in certname:                            
                 inspector = CertificateInspector(pem)
                 output = {}
                 output["fqdn"] = fqdn
+                output["source"] = "cluster"                
                 output["cert"] = certname
                 output["expiration"] = inspector.get_expiration_date().strftime("%Y-%m-%d %H:%M:%S")
                 output["subject"] = str(inspector.get_subject())
@@ -290,13 +291,34 @@ class SupportPackage:
         return outputs    
 
     @staticmethod
+    def get_bdb_certs(fqdn,ip,username,password):
+        response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/bdbs")
+        bdbs = json.loads(response.text)
+        bdb_certs = []
+        for bdb in bdbs:
+            for cert in bdb["authentication_ssl_client_certs"]:
+                bdb_cert = {}
+                inspector = CertificateInspector(cert["client_cert"])
+                bdb_cert["fqdn"] = fqdn
+                bdb_cert["source"] = f"{bdb['name']} ({bdb['uid']})" 
+                bdb_cert["cert"] = "client cert"                
+                bdb_cert["expiration"] = inspector.get_expiration_date().strftime("%Y-%m-%d %H:%M:%S")
+                bdb_cert["subject"] = str(inspector.get_subject())
+                bdb_cert["issuer"] = str(inspector.get_issuer())
+                bdb_certs.append(bdb_cert)
+        return bdb_certs        
+
+    @staticmethod
     def get_certificate_info(fqdn, ip, username, password):
         certificates = []
         response = SupportPackage.api_request(fqdn,ip,username,password,"/v1/cluster/certificates")
-        certs = SupportPackage.deserialize_certificates(fqdn,response)
+        certs = SupportPackage.deserialize_certificates(fqdn,response.text)
         for cert in certs:
-            certificates.append(cert)
-        return certificates
+            certificates.append(cert)        
+        bdb_certs = SupportPackage.get_bdb_certs(fqdn,ip,username,password)
+        certificates.extend(bdb_certs)
+
+        return sorted(certificates, key=lambda x:(x['fqdn'], x['source'], x['cert']))
    
     @staticmethod
     def get_roles_acls(fqdn, ip, username, password):
