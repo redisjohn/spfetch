@@ -213,6 +213,51 @@ class SupportPackage:
         return response.text
 
     @staticmethod
+    def get_cluster_info(fqdn,ip,username,password):
+        response =  SupportPackage.api_request(fqdn,ip,username,password,"/v1/cluster")
+        return response.text
+
+    @staticmethod
+    def get_ciphers(fqdn,cluster):
+        ciphers = []        
+        if cluster['control_cipher_suites']:
+            cipher = {}
+            cipher['fqdn'] = fqdn
+            cipher['type'] = 'control plane'
+            cipher['ciphers'] = cluster['control_cipher_suites']
+            ciphers.append(cipher)
+        if cluster['control_cipher_suites_tls_1_3']:
+            cipher = {}
+            cipher['fqdn'] = fqdn
+            cipher['type'] = 'control plane TLS 1.3'
+            cipher['ciphers'] = cluster['control_cipher_suites_tls_1_3']
+            ciphers.append(cipher)
+        if cluster['data_cipher_list']:
+            cipher = {}
+            cipher['fqdn'] = fqdn
+            cipher['type'] = 'data plane ciphers'
+            cipher['ciphers'] = cluster['data_cipher_list']
+            ciphers.append(cipher)
+        if cluster['data_cipher_suites_tls_1_3']:
+            cipher = {}
+            cipher['fqdn'] = fqdn
+            cipher['type'] = 'data plane ciphers TLS 1.3'
+            cipher['ciphers'] = cluster['data_cipher_suites_tls_1_3']
+            ciphers.append(cipher)
+        if cluster['sentinel_cipher_suites']:
+            cipher = {}
+            cipher['fqdn'] = fqdn
+            cipher['type'] = 'sentinel ciphers'
+            cipher['ciphers'] = cluster['sentinel_cipher_suites']
+            ciphers.append(cipher)
+        if cluster['sentinel_cipher_suites_tls_1_3']:
+            cipher['fqdn'] = fqdn
+            cipher['type'] = 'sentinel ciphers TLS 1.3'
+            cipher['ciphers'] = cluster['sentinel_cipher_suites_tls_1_3']
+            ciphers.append(cipher)
+        return ciphers
+
+    @staticmethod
     def download_package(logger, fqdn, ip, username, password, path, db,
                          reduce_tar_size, save_to_file=True, upload=True, dry_run=False):
         """Download suppport package"""

@@ -55,6 +55,8 @@ def xls(logger, fqdns, resolver, path):
     permissions = []
     nodes = []
     databases = []
+    ciphers = []
+    shards = []
 
     # Create a new instance of the generator
     generator = ExcelReportGenerator()
@@ -63,10 +65,14 @@ def xls(logger, fqdns, resolver, path):
     generator.create_workbook()
     generator.create_sheet("Clusters",tab_color="55585c")
     generator.create_sheet("Nodes",tab_color="55585c")
+    generator.create_sheet("Shards",tab_color="55585c")
+
     generator.create_sheet("Certificates",tab_color="591523")
     generator.create_sheet("Roles",tab_color="591523")
     generator.create_sheet("Acls",tab_color="591523")
     generator.create_sheet("Permissions",tab_color="591523")
+    generator.create_sheet("Ciphers",tab_color="591523")
+
     generator.create_sheet("Databases",tab_color="154859")
     for fqdn in fqdns:
         try:
@@ -119,12 +125,13 @@ def xls(logger, fqdns, resolver, path):
             fqdn_nodes = SupportPackage.get_nodes(fqdn,resolver.get(fqdn),user,pwd)
             nodes.extend(fqdn_nodes)
 
-            # create sheet for each database
             response = SupportPackage.get_bdb_names(fqdn, resolver.get(fqdn), user, pwd)
             bdb_data = SupportPackage.deserialize_bdb_info(fqdn,response)
             databases.extend(bdb_data)
-            #generator.create_sheet(fqdn,tab_color="154859")
-            #generator.add_data(fqdn, bdb_data)
+            
+            cluster = SupportPackage.get_cluster_info(fqdn, resolver.get(fqdn), user,pwd)
+            fqdn_ciphers = SupportPackage.get_ciphers(fqdn,json.loads(cluster))            
+            ciphers.extend(fqdn_ciphers)
 
     
         except Exception as e:
@@ -134,6 +141,7 @@ def xls(logger, fqdns, resolver, path):
     generator.add_data("Clusters", clusters)
     generator.add_data("Nodes", nodes)
     generator.add_data("Certificates",certificates)
+    generator.add_data("Ciphers",ciphers)
     generator.add_data("Roles",roles)
     generator.add_data("Acls",acls)
     generator.add_data("Permissions",permissions)
