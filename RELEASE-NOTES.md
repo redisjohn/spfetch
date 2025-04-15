@@ -17,7 +17,8 @@
 
     - Added Certificate Tab to include detailed information on cluster and client certificates by fqdn including subject, issuer and expiration date by cluster. 
 
-    - Add Roles, ACL, and Permissions Tabs to include information Roles, ACLs and Permissions by cluster.
+    - Add Roles, ACL, and Permissions Tabs to include information Roles, ACLs and 
+    Permissions by cluster.
 
     - Added Cipher tab to include information about Ciphers by control and data plan by cluster.
 

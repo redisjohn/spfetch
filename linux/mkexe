@@ -1,4 +1,4 @@
-#!\bin\bash
+#!/bin/bash
 pyinstaller -y rflat.py --onefile --collect-all keyrings.alt --hidden-import pkgutil --copy-metadata keyrings.alt
 pyinstaller -y credstore.py --onefile --collect-all keyrings.alt --hidden-import pkgutil --copy-metadata keyrings.alt
 pyinstaller -y unbloat.py --onefile --collect-all keyrings.alt --hidden-import pkgutil --copy-metadata keyrings.alt
