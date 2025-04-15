@@ -117,9 +117,8 @@ class SupportPackage:
         return nodes
 
     @staticmethod
-    def tablulate_bdb_info(fqdn, response):
+    def tablulate_bdb_info(fqdn, bdb_json):
         """tabulate bdb info"""
-        bdb_json = json.loads(response)
 
         # sort by uid
         bdb_names = sorted(bdb_json, key=lambda x: x['uid'])

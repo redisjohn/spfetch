@@ -171,7 +171,7 @@ def process(logger, fqdn, ip, user, pwd, path, args):
             else:
                 SupportPackage.tablulate_bdb_info(fqdn, bdb_json)
         except Exception as e:
-            logger.exception(e, "Error Processing Command")
+            logger.exception(e, f"{fqdn}-Error Processing Command")
     elif args.license:
         response = SupportPackage.get_license_info(fqdn, ip, user, pwd)
         redis_license = SupportPackage.deserialize_license_info(fqdn, response)
