@@ -8,7 +8,7 @@ rflat accesses a Redis Enterprise Cluster using the Redis Enterprise Software AP
 
 credstore is a companion utility that works with rflat to manage credentials. credstore encrypts and stores credentials that can be retrieved and used by rflat.  This allows automated scripts to use rflat in other tooling without having to expose user names and passwords in plain text.  It also provides a mechanism to collect support package and inventory information across an entire fleet of clusters using a single command.  
 
-These tools have been developed using python.
+These tools have been developed using python. 
   
 ```sh
  ./rflat -h
@@ -38,70 +38,11 @@ These tools have been developed using python.
 
 ----------
 
-## Quick Start
-
-1. Ensure you have python 3.8 or higher.
-
-1. Ensure you have git installed.
-
-1. Retrieve the code from Github
-
-```sh
-git clone https://github.com/redisjohn/spfetch
-```
-
-1. Install dependencies
-
-```sh
-  pip install -r requirements.txt
-```
-
-1. For Linux, the following script is optional but will setup symbolic links and ensure all the python scripts can be executed.
-  
-```sh
-  ./install.sh
-```
-
-1. Initialize the Credential Vault
-
-```sh
-     ./credstore init 
-```
-  
- If this command fails on linux, run the following command:
- 
-```sh
-  pip install keyrings.alt
-```
-
-1. Add cluster credentials to the vault.
-
-  If you are using DNS:
-  
-```sh
-     ./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pwd mypassword
-```
- 
-  If you are not Using DNS, specify the --ip flag with the IP address of the cluster's primary (master) node. 
-
-```sh
-     ./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pwd mypassword --ip 10.7.8.6
-```
-
-1. To fetch a support Package
-
-```sh  
-  ./rflat cluster1.mydomain.com
-```
-
-1. The packages are located in the "output" folder.  
-
-----------
-
-## Deep Dive
+## Table of Contents
 
 - [rflat  (Redis Enterprise Fleet Auditing Tool)](#rflat--redis-enterprise-fleet-auditing-tool)
   - [Quick Start](#quick-start)
+  - [Building standalone Executables](#building-standalone-executables)
   - [Deep Dive](#deep-dive)
       - [Requirements for Redis Enterprise User Permissions](#requirements-for-redis-enterprise-user-permissions)
       - [Explicitly Providing Credentials](#explicitly-providing-credentials)
@@ -126,6 +67,112 @@ git clone https://github.com/redisjohn/spfetch
   - [Considerations for running python](#considerations-for-running-python)
         - [Windows](#windows)
         - [Linux and Mac OS](#linux-and-mac-os)
+----------
+## Quick Start
+
+1. Ensure you have python 3.8 or higher.
+
+1. Ensure you have git installed.
+
+1. Retrieve the code from Github
+
+```sh
+git clone https://github.com/redisjohn/spfetch
+```
+
+1. Install dependencies
+
+```sh
+  pip install -r requirements.txt
+```
+1. For Linux, install the following package:
+
+```
+  pip install keyrings.alt
+```
+
+1. For Linux, the following script is optional but will setup symbolic links and will ensure all the python scripts can be executed.
+  
+```sh
+  ./install.sh
+```
+
+1. Initialize the Credential Vault
+
+```sh
+  ./credstore init 
+```
+ 
+
+1. Add cluster credentials to the vault.
+
+  If you are using DNS:
+  
+```sh
+     ./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pwd mypassword
+```
+ 
+  If you are not Using DNS, specify the --ip flag with the IP address of the cluster's primary (master) node. 
+
+```sh
+     ./credstore  add --fqdn cluster1.mydomain.com --user redisuser --pwd mypassword --ip 10.7.8.6
+```
+
+1. To fetch a support Package
+
+```sh  
+  ./rflat cluster1.mydomain.com
+```
+
+1. The packages are located in the "output" folder.  
+
+----------
+## Building standalone executables
+
+It is possible to build a set of executables that can be copied and ran on other machines without having to install python and all the dependencies required:  
+
+
+#### For Windows
+
+Install pyinstaller package
+
+  ```
+  pip install pyinstaller
+  ```
+Build the executables
+
+  ```
+  win\mkexe
+  ```
+
+This will generate the following standalone executable files:
+
+  ```
+  dist\rflat.exe
+  dist\credstore.exe
+  dist\unbloat.exe
+  ```
+
+#### For Linux
+Install pyinstaller package
+
+  ```
+  pip install pyinstaller
+  ```
+Build the images 
+
+  ```
+  linux/mkexe
+  ```
+This will generate the following standalone executable files:
+
+  ```
+  dist/rflat
+  dist/credstore
+  dist/unbloat
+  ```
+
+## Deep Dive
 
 #### Requirements for Redis Enterprise User Permissions
 

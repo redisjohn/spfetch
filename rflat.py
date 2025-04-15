@@ -248,7 +248,7 @@ def main():
     '''main function'''
 
     parser = argparse.ArgumentParser(
-        description="Redis Enterprise Audit Tool Version 241212"
+        description="Redis Enterprise Audit Tool Version 250415"
     )
 
     parser.add_argument(

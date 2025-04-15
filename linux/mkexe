@@ -1,0 +1,8 @@
+#!\bin\bash
+pyinstaller -y rflat.py --onefile --collect-all keyrings.alt --hidden-import pkgutil --copy-metadata keyrings.alt
+pyinstaller -y credstore.py --onefile --collect-all keyrings.alt --hidden-import pkgutil --copy-metadata keyrings.alt
+pyinstaller -y unbloat.py --onefile --collect-all keyrings.alt --hidden-import pkgutil --copy-metadata keyrings.alt
+chmod +x rflat
+chmod +x credstore
+chmod +x unbloat.py
+echo Standalone executables created ...
